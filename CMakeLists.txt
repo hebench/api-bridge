@@ -1,0 +1,71 @@
+cmake_minimum_required(VERSION 3.12)
+project(api_bridge LANGUAGES C CXX)
+set(CMAKE_PROJECT_NAME ${PROJECT_NAME})
+
+# build type
+if(CMAKE_BUILD_TYPE)
+  set(RELEASE_TYPES
+      Debug
+      Release
+      RelWithDebInfo
+      MinSizeRel)
+  list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
+  if(${INDEX_FOUND} EQUAL -1)
+    message(
+      FATAL_ERROR
+        "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel"
+      )
+  endif()
+else()
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of Build" FORCE)
+endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+# versioning
+configure_file("VERSION" "VERSION")
+file(STRINGS "VERSION" ${CMAKE_PROJECT_NAME}_VERSION)
+list(LENGTH ${CMAKE_PROJECT_NAME}_VERSION ${CMAKE_PROJECT_NAME}_VERSION_LEN)
+if(${CMAKE_PROJECT_NAME}_VERSION_LEN LESS 4)
+    message(FATAL_ERROR "Invalid project version file format.")
+endif()
+list(GET ${CMAKE_PROJECT_NAME}_VERSION 0 ${CMAKE_PROJECT_NAME}_VERSION_PREFIX)
+if(NOT ${CMAKE_PROJECT_NAME}_VERSION_PREFIX STREQUAL "v")
+    message(FATAL_ERROR "Invalid project version prefix format read from file.")
+endif()
+list(GET ${CMAKE_PROJECT_NAME}_VERSION 1 ${CMAKE_PROJECT_NAME}_VERSION_MAJOR)
+list(GET ${CMAKE_PROJECT_NAME}_VERSION 2 ${CMAKE_PROJECT_NAME}_VERSION_MINOR)
+list(GET ${CMAKE_PROJECT_NAME}_VERSION 3 ${CMAKE_PROJECT_NAME}_VERSION_REVISION)
+set(VERSION_TXT "v${${CMAKE_PROJECT_NAME}_VERSION_MAJOR}.${${CMAKE_PROJECT_NAME}_VERSION_MINOR}.${${CMAKE_PROJECT_NAME}_VERSION_REVISION}") 
+if(${CMAKE_PROJECT_NAME}_VERSION_LEN GREATER 4)
+    list(GET ${CMAKE_PROJECT_NAME}_VERSION 4 ${CMAKE_PROJECT_NAME}_VERSION_BUILD)
+    set(VERSION_TXT "${VERSION_TXT}-${${CMAKE_PROJECT_NAME}_VERSION_BUILD}")
+else()
+    set(${CMAKE_PROJECT_NAME}_VERSION_BUILD "")
+endif()
+message(STATUS "Project Version: ${VERSION_TXT}")
+
+# C++ flags
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+message(STATUS "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
+
+# API Bridge headers
+set(${CMAKE_PROJECT_NAME}_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/hebench/${CMAKE_PROJECT_NAME}/api.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hebench/${CMAKE_PROJECT_NAME}/types.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hebench/${CMAKE_PROJECT_NAME}/version.h"
+    )
+
+# subprojects
+add_subdirectory(hebench/${CMAKE_PROJECT_NAME})
+add_subdirectory(${CMAKE_PROJECT_NAME}_example_backend)
+
