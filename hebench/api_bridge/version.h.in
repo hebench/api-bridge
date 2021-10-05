@@ -1,0 +1,37 @@
+
+// Copyright (C) 2021 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef _HEBench_API_Bridge_Version_H_7e5fa8c2415240ea93eff148ed73539b
+#define _HEBench_API_Bridge_Version_H_7e5fa8c2415240ea93eff148ed73539b
+
+namespace hebench {
+namespace APIBridge {
+
+//============
+// Versioning
+//============
+
+/*!
+Specifies a version major.
+
+API complete version is of the form major.minor.revision.build
+
+In general, Major and minor changes are NOT backwards compatible.
+Revision changes should be backwards compatible.
+Build changes should not affect compatibility.
+*/
+#define HEBENCH_API_VERSION_MAJOR @@CMAKE_PROJECT_NAME@_VERSION_MAJOR@
+//! Specifies a version minor.
+#define HEBENCH_API_VERSION_MINOR @@CMAKE_PROJECT_NAME@_VERSION_MINOR@
+//! Specifies a version release.
+#define HEBENCH_API_VERSION_REVISION @@CMAKE_PROJECT_NAME@_VERSION_REVISION@
+#ifndef HEBENCH_API_VERSION_BUILD
+//! Specifies a version build. Can be overriden by compiler flags.
+#define HEBENCH_API_VERSION_BUILD "@@CMAKE_PROJECT_NAME@_VERSION_BUILD@"
+#endif
+
+}
+}
+
+#endif // defined _HEBench_API_Bridge_Version_H_7e5fa8c2415240ea93eff148ed73539b
