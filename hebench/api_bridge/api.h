@@ -16,43 +16,43 @@ namespace APIBridge {
  * @return Error code.
  * @details The specified handle is no longer valid for any calls requiring a
  * handle after this function is called. This function releases resources held
- * by the handle in the back-end and destroys the handle.
+ * by the handle in the backend and destroys the handle.
  *
- * Test harness will call this method to clean up a handle it no longer needs.
- * Test harness will take care to destroy handles in reverse order in which it
+ * Test Harness will call this method to clean up a handle it no longer needs.
+ * Test Harness will take care to destroy handles in reverse order in which it
  * obtained them.
  */
 extern "C" ErrorCode destroyHandle(Handle h);
 
 /**
- * @brief Initializes the back-end engine.
+ * @brief Initializes the backend engine.
  * @param[out] h_engine Points to a handle to fill with the initialized
- * back-end engine handle descriptor. Must not be null.
+ * backend engine handle descriptor. Must not be null.
  * @return Error code.
- * @details Use this method to initialize back-end engine, such as drivers,
+ * @details Use this method to initialize backend engine, such as drivers,
  * hardware, etc. required to perform operations.
  */
 extern "C" ErrorCode initEngine(Handle *h_engine);
 
 /**
- * @brief Retrieves the number of benchmarks for which the back-end is registering
+ * @brief Retrieves the number of benchmarks for which the backend is registering
  * to perform.
- * @param[in] h_engine Back-end engine handle.
+ * @param[in] h_engine Backend engine handle.
  * @param[out] p_count Points to variable to receive the result. Cannot be null.
  * @return Error code.
- * @details The number of benchmarks returned in \p p_count for which back-end is
+ * @details The number of benchmarks returned in \p p_count for which backend is
  * subscribing must be greater than 0.
  */
 extern "C" ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count);
 /**
- * @brief Retrieves handles to the benchmark descriptions for which the back-end is
+ * @brief Retrieves handles to the benchmark descriptions for which the backend is
  * registering to perform.
- * @param[in] h_engine Back-end engine handle.
+ * @param[in] h_engine Backend engine handle.
  * @param[out] p_h_bench_descs Pointer to array with capacity for as many handles
  * as specified by subscribeBenchmarksCount(). Cannot be null.
  * @return Error code.
  * @details The handles in \p p_h_bench_descs are pointed to the internal representation
- * of the description of each benchmark that the back-end is registering to perform.
+ * of the description of each benchmark that the backend is registering to perform.
  * These benchmark description handles shall be used to query information about the
  * registered benchmarks without having to instantiate the represented benchmark proper,
  * and to instantiate the benchmark once it is time to execute it by calling the
@@ -63,12 +63,12 @@ extern "C" ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_
 extern "C" ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs);
 /**
  * @brief Retrieves details about the flexible parameters supported by this workload.
- * @param[in] h_engine Handle to the back-end engine to perform the benchmark.
+ * @param[in] h_engine Handle to the backend engine to perform the benchmark.
  * @param[in] h_bench_desc Handle to the benchmark description to query for information.
  * @param[out] p_param_count Points to variable to receive the number of workload parameters
- * required by the back-end.
+ * required by the backend.
  * @param[out] p_default_count Points to variable to receive the number of sets of default
- * workload parameters supported by the back-end.
+ * workload parameters supported by the backend.
  * @return Error code.
  * @details Value returned in \p p_param_count is 0 if and only if \p p_default_count
  * is also 0.
@@ -79,8 +79,8 @@ extern "C" ErrorCode getWorkloadParamsDetails(Handle h_engine,
                                               std::uint64_t *p_param_count,
                                               std::uint64_t *p_default_count);
 /**
- * @brief Retrieves the concrete description for a benchmark registered by back-end.
- * @param[in] h_engine Handle to the back-end engine to perform the benchmark.
+ * @brief Retrieves the concrete description for a benchmark registered by backend.
+ * @param[in] h_engine Handle to the backend engine to perform the benchmark.
  * @param[in] h_bench_desc Handle to the benchmark description to query for information.
  * @param[out] p_bench_desc Points to the benchmark descriptor to receive the description
  * of the benchmark.
@@ -100,22 +100,22 @@ extern "C" ErrorCode describeBenchmark(Handle h_engine,
                                        BenchmarkDescriptor *p_bench_desc,
                                        WorkloadParams *p_default_params);
 /**
- * @brief Instantiates a benchmark on the back-end.
- * @param[in] h_engine Handle to the back-end engine to perform the benchmark.
+ * @brief Instantiates a benchmark on the backend.
+ * @param[in] h_engine Handle to the backend engine to perform the benchmark.
  * @param[in] h_bench_desc Handle to the description of the benchmark to instantiate.
  * @param[in] p_params A set of parameters for the benchmark to be instantiated.
  * It is ignored if workload does not support parameters.
  * @param[out] h_benchmark Points to a handle to be filled with the initialized benchmark.
  * @return Error code.
  * @details The returned benchmark handle will be used to reference this benchmark
- * while executing the benchmark operations by the Test harness. Destroying or modifying
+ * while executing the benchmark operations by the Test Harness. Destroying or modifying
  * \p h_bench_desc or \p p_params must not affect the benchmark instantiation.
  *
- * Back-end can assume that only a single benchmark handle will be initialized at
- * all times for the specified back-end engine.
+ * Backend can assume that only a single benchmark handle will be initialized at
+ * all times for the specified backend engine.
  *
  * Parameter \p h_bench_desc is a handle to a description previously registered by
- * the back-end during the call to subscribeBenchmarks() of the benchmark to be
+ * the backend during the call to subscribeBenchmarks() of the benchmark to be
  * performed.
  *
  * If workload for the benchmark supports parameters \p p_params cannot be null;
@@ -130,20 +130,20 @@ extern "C" ErrorCode initBenchmark(Handle h_engine,
 
 /**
  * @brief Given a pack of parameters in raw, native data format, encodes them into
- * plain text suitable for back-end encryption or operation.
+ * plain text suitable for backend encryption or operation.
  * @param[in] h_benchmark Handle to the initialized benchmark to perform.
  * @param[in] p_parameters Points to a PackedData instance containing the
  * information for the pack of parameters to encode.
  * @param[out] h_plaintext Opaque handle representing the resulting encoded data
- * by the back-end.
+ * by the backend.
  * @return Error code.
  * @details The size and shape of each parameter are determined by the
- * Test harness based on expected input shapes of the operation performed. These
+ * Test Harness based on expected input shapes of the operation performed. These
  * shapes are operation-dependent and are documented for each operation. It is the
- * responsibility of the back-end to keep track of these shapes (through the opaque
+ * responsibility of the backend to keep track of these shapes (through the opaque
  * handle) so that they can be retrieved appropriately when needed.
  *
- * Unless otherwise specified by a workload or category, in general, Test harness will
+ * Unless otherwise specified by a workload or category, in general, Test Harness will
  * encode all parameters that ought to be encrypted first in a single call to encode,
  * and all the plain text in another call.
  *
@@ -170,10 +170,10 @@ extern "C" ErrorCode encode(Handle h_benchmark,
  * harness based on the expected shape for each component of the data pack
  * (representing either operation parameter or result of the operation performed).
  * These shapes are operation-dependent and are documented for each operation.
- * It is the responsibility of the back-end to keep track of these shapes (through
+ * It is the responsibility of the backend to keep track of these shapes (through
  * the opaque handle) so that they can be retrieved appropriately.
  *
- * Back-end must decode the data from \p h_plaintext handle and fill out as
+ * Backend must decode the data from \p h_plaintext handle and fill out as
  * much as it can into each data buffer. If some data buffer's size if smaller
  * than needed for that data entry, the rest of the encoded data entry must be
  * discarded.
@@ -193,7 +193,7 @@ extern "C" ErrorCode decode(Handle h_benchmark,
  * @param[out] h_ciphertext Opaque handle to the encrypted data.
  * @return Error code.
  * @details The resulting cipher text handle is commonly used in a call
- * to the load() function to load the cipher text into the back-end for execution
+ * to the load() function to load the cipher text into the backend for execution
  * of the operation to benchmark.
  *
  * Destroying or re-utilizing handle \p h_plaintext after this call completes shall
@@ -223,15 +223,15 @@ extern "C" ErrorCode decrypt(Handle h_benchmark,
                              Handle *h_plaintext);
 
 /**
- * @brief Loads the specified data from the local host into the remote back-end to
+ * @brief Loads the specified data from the local host into the remote backend to
  * use as parameter during a call to operate().
  * @param[in] h_benchmark Handle to the initialized benchmark to perform.
  * @param[in] h_local_packed_params Collection of handles to the data of packed
- * parameters to load into back-end remote.
+ * parameters to load into backend remote.
  * @param[in] local_count Number of handles in array \p h_local_packed_params.
- * @param[out] h_remote Handle representing the loaded data into the back-end.
+ * @param[out] h_remote Handle representing the loaded data into the backend.
  * @return Error code.
- * @details This function exists to allow back-ends to transfer the data from the
+ * @details This function exists to allow backends to transfer the data from the
  * host into the actual device (accelerator, remote server, etc.) that will perform
  * the operations.
  *
@@ -270,20 +270,20 @@ extern "C" ErrorCode load(Handle h_benchmark,
                           Handle *h_remote);
 
 /**
- * @brief Retrieves the specified data from the back-end.
+ * @brief Retrieves the specified data from the backend.
  * @param[in] h_benchmark Handle to the initialized benchmark to perform.
- * @param[in] h_remote Handle to the data to retrieve from back-end remote and store
+ * @param[in] h_remote Handle to the data to retrieve from backend remote and store
  * into \p h_local.
  * @param[out] h_local_packed_params Collection of opaque handles to represent the data
- * stored in the local host retrieved from the back-end.
+ * stored in the local host retrieved from the backend.
  * @param[in] local_count Number of available handles to receive data.
  * @return Error code.
  * @details This function is the counterpart to load().
  *
  * Function operate() receives an opaque handle that represents the result
- * of the operation in the back-end. Because this result may live in a device
+ * of the operation in the backend. Because this result may live in a device
  * other than the host (accelerator, remote server, etc.), a call to `store()`
- * must be issued to retrieve the data from the back-end remote and store it in the
+ * must be issued to retrieve the data from the backend remote and store it in the
  * host.
  *
  * Each handle in \p h_local_packed_params will represent an encoded/encrypted PackedData
@@ -304,34 +304,34 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * @brief Performs the workload operation of the benchmark.
  * @param[in] h_benchmark Handle to the initialized benchmark to perform.
  * @param[in] h_remote_packed_params Handle representing the parameters for the
- * operation previously loaded into the back-end remote by a call to load() to
+ * operation previously loaded into the backend remote by a call to load() to
  * use for the operation. The data represented by this handle must not be changed
  * since it may be reused in several calls to `operate()`.
  * @param[in] p_param_indexers Indexers for the parameters of the operation.
  * @param[out] h_remote_output Handle representing the result of the operation
- * stored in the back-end remote.
+ * stored in the backend remote.
  * @return Error code.
- * @details This is the function that Test harness will benchmark. Back-end MUST ensure
+ * @details This is the function that Test Harness will benchmark. Backend MUST ensure
  * that the complete operation runs on all specified inputs and that the corresponding
  * outputs are generated before this function returns.
  *
  * Destroying or re-using handle or values in \p h_remote_packed_params and \p p_param_indexers
  * after this call completes shall not affect the resulting \p h_remote_output.
  *
- * The actual collection of inputs to the operation that back-end must use is loaded into
- * the back-end remote using a single call of the load() function. Parameter \p p_param_indexers
+ * The actual collection of inputs to the operation that backend must use is loaded into
+ * the backend remote using a single call of the load() function. Parameter \p p_param_indexers
  * contains the indexers for the parameter packs, and thus the number of elements in
  * array \p p_param_indexers is, at least, the same as the number of parameters required for
- * the operation. The actual configuration for the call to `operate()` issued by Test harness
+ * the operation. The actual configuration for the call to `operate()` issued by Test Harness
  * is defined for each workload.
  *
  * Once decoded, the workload results generated by this function must be indexed starting
  * at 0, regardless of starting input sample index specified by \p p_param_indexers. Any
- * offset in the input sample index will be taken into account by Test harness when validating
+ * offset in the input sample index will be taken into account by Test Harness when validating
  * the results. For more information, see \ref results_order .
  *
- * The following example shows a typical flow followed by Test harness when performing a benchmark.
- * Here, Test harness is benchmarking offline an operation of the form
+ * The following example shows a typical flow followed by Test Harness when performing a benchmark.
+ * Here, Test Harness is benchmarking offline an operation of the form
  * @code
  * result = op(A, B)
  * @endcode
@@ -377,7 +377,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * Handle h_cipher_inputs;
  * encrypt(h_benchmark, h_encoded_inputs, &h_cipher_inputs);
  *
- * // load encrypted data into back-end's remote to use as input to the operation
+ * // load encrypted data into backend's remote to use as input to the operation
  * Handle h_remote_inputs;
  * load(h_benchmark,
  *      &h_cipher_inputs, 1, // only 1 PackedData
@@ -405,7 +405,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  *             &h_remote_result);
  * }
  *
- * // at this point, the operation must be completed in remote back-end
+ * // at this point, the operation must be completed in remote backend
  *
  * // clean up data we no longer need
  * destroyHandle(h_remote_inputs);
@@ -413,7 +413,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * // postprocess output
  * Handle h_cipher_output;
  *
- * // retrieve data from back-end's remote and store in host
+ * // retrieve data from backend's remote and store in host
  * store(h_benchmark, h_remote_result,
  *       &h_cipher_output, 1 // Only 1 local PackedData for result expected for this operation.
  *      );
@@ -465,7 +465,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * // ...
  * //
  *
- * // when done with all the benchmarks, clean up back-end
+ * // when done with all the benchmarks, clean up backend
  * destroyHandle(h_engine);
  * @endcode
  * @sa load(), store(), \ref results_order
@@ -476,8 +476,8 @@ extern "C" ErrorCode operate(Handle h_benchmark,
                              Handle *h_remote_output);
 
 /**
- * @brief Retrieves the name of a specified scheme ID from the back-end.
- * @param[in] h_engine Handle to the back-end engine.
+ * @brief Retrieves the name of a specified scheme ID from the backend.
+ * @param[in] h_engine Handle to the backend engine.
  * @param[in] s Scheme ID.
  * @param[out] p_name Buffer to store C-string name of the scheme.
  * @param[in] size Size in bytes of \p p_name buffer.
@@ -495,8 +495,8 @@ extern "C" ErrorCode operate(Handle h_benchmark,
  */
 extern "C" std::uint64_t getSchemeName(Handle h_engine, Scheme s, char *p_name, std::uint64_t size);
 /**
- * @brief Retrieves the name of the specified security for the scheme ID from the back-end.
- * @param[in] h_engine Handle to the back-end engine.
+ * @brief Retrieves the name of the specified security for the scheme ID from the backend.
+ * @param[in] h_engine Handle to the backend engine.
  * @param[in] s Scheme ID.
  * @param[in] sec Security ID for scheme.
  * @param[out] p_name Buffer to store C-string name of the security.
@@ -517,8 +517,8 @@ extern "C" std::uint64_t getSchemeSecurityName(Handle h_engine, Scheme s, Securi
                                                char *p_name, std::uint64_t size);
 
 /**
- * @brief Retrieves back-end specific text description for a benchmark descriptor.
- * @param[in] h_engine Handle to the back-end engine.
+ * @brief Retrieves backend specific text description for a benchmark descriptor.
+ * @param[in] h_engine Handle to the backend engine.
  * @param[in] h_bench_desc Handle to benchmark description for which to obtain the
  * text description.
  * @param[in] p_w_params Workload parameters for this benchmark. May be null if no
@@ -565,7 +565,7 @@ extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description
 /**
  * @brief Retrieves the detailed description of the last error that occurred
  * during an operation on the engine.
- * @param[in] h_engine Handle to the back-end engine.
+ * @param[in] h_engine Handle to the backend engine.
  * @param[out] p_description Buffer to store C-string description of the error.
  * @param[in] size Size in bytes of \p p_description buffer.
  * @return Number of bytes needed in buffer to store the complete description,
@@ -578,7 +578,7 @@ extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description
  * in \p size from the error description into the buffer pointed to by
  * \p p_description, including the C-string null terminator.
  *
- * Detailed description is back-end implementation defined. If no detailed
+ * Detailed description is backend implementation defined. If no detailed
  * implementation, returning the general error description is suggested.
  * If no error has occurred, some "no error" message is suggested.
  */

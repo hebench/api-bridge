@@ -64,7 +64,7 @@ public:
 /**
  * @brief Helper class to encapsulate objects that will cross the boundary
  * of the API Bridge.
- * @details This class is provided to ease the creation of handles to back-end
+ * @details This class is provided to ease the creation of handles to backend
  * internal objects (other than engine and benchmarks).
  *
  * It is recommended to use BaseEngine::createHandle<ObjType>() to create
@@ -75,7 +75,7 @@ public:
  *
  * When using this object directly, instead of the recommended wrappers, users
  * should keep in mind that the method `T &EngineObject::get<T>()` allows the
- * retrieval of a reference to the created object of type `T` by the back-end
+ * retrieval of a reference to the created object of type `T` by the backend
  * when needed. However, the casting of the internal object by this method is
  * <b>unsafe</b>. Users must ensure that the object contained is of the right
  * type (such as using the `tag` field in the handle for extra information).
@@ -89,7 +89,7 @@ public:
  * EngineObject *p_engine_object = ...
  * hebench::APIBridge::Handle handle;
  * handle.p    = p_engine_object;
- * handle.size = ... // back-end implementation dependent
+ * handle.size = ... // backend implementation dependent
  * handle.tag  = p_engine_object->classTag() | other_bit_mask_tag_values;
  * @endcode
  *
@@ -106,7 +106,7 @@ private:
 
 public:
     /**
-     * @brief Used to identify this class when returned as a handle to Test harness.
+     * @brief Used to identify this class when returned as a handle to Test Harness.
      * @sa ITaggedObject
      */
     static constexpr std::int64_t tag = 0x2000000000000000; // bit 61
