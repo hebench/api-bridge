@@ -18,7 +18,7 @@ Current build system uses CMake.
 - CMake 3.12 or above
 
 ## Online Documentation <a name="online-documentation"></a>
-The complete online documentation for HEBench can be found here [HEBench online documentation](DOCLINK)
+The complete online documentation for HEBench can be found here [HEBench online documentation](https://hebench.github.io/frontend)
 
 ## API Bridge <a name="api-bridge"></a>
 

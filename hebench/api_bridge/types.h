@@ -20,13 +20,13 @@ namespace APIBridge {
  * @brief Return value for API bridge functions.
  * @details A value of `HEBENCH_ECODE_SUCCESS` means success.
  *
- * An error value of `ECODE_CRITICAL_ERROR` will prompt the Test harness to terminate.
+ * An error value of `ECODE_CRITICAL_ERROR` will prompt the Test Harness to terminate.
  * This usually indicates an unrecoverable error that indicates that the backend engine
  * encounter an unstable state and it affects the backend engine capacity to recover,
- * cleanup and/or create new benchmarks. On this error, Test harness will stop benchmarking
+ * cleanup and/or create new benchmarks. On this error, Test Harness will stop benchmarking
  * and attempt to clean up any open handles before exiting. Any further errors are ignored.
  *
- * Back-end should custom-define and return appropriate error codes for all required
+ * Backend should custom-define and return appropriate error codes for all required
  * operations through the API bridge. Custom error codes values must be different than
  * those pre-defined in the API bridge.
  * @sa getErrorDescription()
@@ -43,8 +43,8 @@ typedef std::int32_t ErrorCode;
 
 //! Specifies a critical error.
 /*!
-Returning this on an API bridge call will prompt the Test harness to terminate immediately.
-Test harness will stop benchmarking and attempt to clean up any open handles before
+Returning this on an API bridge call will prompt the Test Harness to terminate immediately.
+Test Harness will stop benchmarking and attempt to clean up any open handles before
 exiting. Any further errors are ignored.
 */
 #define HEBENCH_ECODE_CRITICAL_ERROR 0x7fffffff
@@ -342,9 +342,9 @@ enum DataType
  */
 enum Category
 {
-    /*! Test Harness sends the same single data sample repeatedly to back-end. */
+    /*! Test Harness sends the same single data sample repeatedly to backend. */
     Latency,
-    /*! Test Harness loads the whole dataset to back-end before requesting all the results in a single operation.<br>
+    /*! Test Harness loads the whole dataset to backend before requesting all the results in a single operation.<br>
      * For multiple samples on each input, the results are ordered in a row-major fashion.<br>
      * For more information, see \ref results_order .
      */
@@ -387,9 +387,9 @@ union CategoryParams
          * @details Latency benchmark will submit an operation with the same set
          * of inputs as many times as needed until the time elapsed during the test
          * is, at least, the number of milliseconds specified. A value of 0, indicates
-         * to Test harness to use default latency test time.
+         * to Test Harness to use default latency test time.
          *
-         * Test harness will submit, at least, two iterations regardless the time
+         * Test Harness will submit, at least, two iterations regardless the time
          * specified.
          */
         std::uint64_t min_test_time_ms;
@@ -416,9 +416,9 @@ union CategoryParams
          * in case that there is not enough data samples for a parameter, the number
          * of samples will be lower than requested.
          *
-         * A value of 0 indicates to Test harness that number of samples for the
+         * A value of 0 indicates to Test Harness that number of samples for the
          * corresponding operation parameter accepts any value. In this case, sample
-         * size is specified by Test harness user options. If value specified by Test
+         * size is specified by Test Harness user options. If value specified by Test
          * harness is `0`, the sample size for the operation parameter is defined in
          * the workload specification.
          *
@@ -433,7 +433,7 @@ union CategoryParams
  * @brief Defines a benchmark test.
  * @details A benchmark test is defined by a Workload, a Category for said workload,
  * a scheme for such Category, which inputs are plain text of cipher text,
- * the security level for the scheme, and an extra parameter that is back-end
+ * the security level for the scheme, and an extra parameter that is backend
  * specific.
  *
  * `cipher_param_mask` is a bit mask that defines which operation parameters are cipher
@@ -441,12 +441,12 @@ union CategoryParams
  * it is plain text. Only the least significant `n` bits of this field will be used
  * for an operation that supports `n` operands. The rest are ignored.
  *
- * Test harness will request the list of BenchmarkDescriptor objects for which a back-end
- * is subscribing. When Test harness is about to execute a benchmark, the BenchmarkDescriptor
- * is passed down to the back-end with the same values used during subscription.
+ * Test Harness will request the list of BenchmarkDescriptor objects for which a backend
+ * is subscribing. When Test Harness is about to execute a benchmark, the BenchmarkDescriptor
+ * is passed down to the backend with the same values used during subscription.
  *
  * Fields `workload`, `data_type`, `category`, `cat_params` and `cypher_param_mask`
- * specify the actual operation for the benchmark that Test harness will execute.
+ * specify the actual operation for the benchmark that Test Harness will execute.
  * Different combination of values specified by `scheme`, `security`, and `other`
  * fields do not affect the type of benchmark, but further describe it.
  *
@@ -470,7 +470,7 @@ struct BenchmarkDescriptor
     // extra description
     Scheme scheme; //!< Scheme for the benchmark.
     Security security; //!< Security for the scheme.
-    std::int64_t other; //!< Back-end specific extra parameter.
+    std::int64_t other; //!< Backend specific extra parameter.
 };
 
 //================================
@@ -508,9 +508,9 @@ struct _FlexibleData
 #define NULL_HANDLE hebench::APIBridge::_FlexibleData({ 0, 0, 0 })
 
 /**
- * @brief Represents a native data buffer maintained by the Test harness.
- * @details This structure is created and maintained by the Test harness and
- * is passed to the back-end through the API bridge.
+ * @brief Represents a native data buffer maintained by the Test Harness.
+ * @details This structure is created and maintained by the Test Harness and
+ * is passed to the backend through the API bridge.
  *
  * The buffer pointed to by the `p` field is formatted to contain data in
  * the format expected for the respective parameter for which the buffer
@@ -519,14 +519,14 @@ struct _FlexibleData
  * Note that the `size` field contains the size in bytes of the buffer, not
  * the number of items of the corresponding data type.
  *
- * The `tag` field should not be modified outside of the Test harness.
+ * The `tag` field should not be modified outside of the Test Harness.
  */
 typedef _FlexibleData NativeDataBuffer;
 /**
- * @brief Encapsulates an opaque handle to back-end data.
- * @details All fields of this struct are managed by the back-end. Test
+ * @brief Encapsulates an opaque handle to backend data.
+ * @details All fields of this struct are managed by the backend. Test
  * harness will not modify any of them, unless otherwise specified. It
- * is up to the back-end to set these fields to match its needs.
+ * is up to the backend to set these fields to match its needs.
  */
 typedef _FlexibleData Handle;
 
@@ -551,7 +551,7 @@ struct DataPack
  * @brief Defines a collection of data packs.
  * @details This struct is used to encode/decode a collection of data packs,
  * in a single call instead of encoding each data pack at a time. This
- * is useful for back-ends to optimize large amounts of data.
+ * is useful for backends to optimize large amounts of data.
  */
 struct PackedData
 {
