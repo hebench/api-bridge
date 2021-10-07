@@ -18,11 +18,11 @@ Current build system uses CMake.
 - CMake 3.12 or above
 
 ## Online Documentation <a name="online-documentation"></a>
-The complete online documentation for HEBench can be found here [HEBench online documentation](DOCLINK)
+The complete online documentation for HEBench can be found here [HEBench online documentation](https://hebench.github.io/frontend)
 
 ## API Bridge <a name="api-bridge"></a>
 
-This is a primary component of HEBench. For more information see [HEBench home page and frontend](https://github.com/hebench/frontend) .
+This is a primary component of HEBench. For more information see [HEBench home page](https://hebench.github.io) and [frontend](https://github.com/hebench/frontend) repository.
 
 API Bridge is the HEBench component that provides the communication between the frontend's Test Harness and backends.
 
