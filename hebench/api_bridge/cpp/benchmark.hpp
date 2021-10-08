@@ -36,7 +36,7 @@ class BenchmarkDescription : public ITaggedObject
 {
 public:
     /**
-     * @brief Used to identify this class when returned as a handle to Test harness.
+     * @brief Used to identify this class when returned as a handle to Test Harness.
      * @sa ITaggedObject
      */
     static constexpr std::int64_t tag = 0x1000000000000000; // bit 60
@@ -136,7 +136,7 @@ private:
 
 /**
  * @brief Top level opaque benchmark class.
- * @details This class hides the internal complexities of the back-end operations from
+ * @details This class hides the internal complexities of the backend operations from
  * the API Bridge.
  */
 class BaseBenchmark : public ITaggedObject
@@ -146,7 +146,7 @@ private:
 
 public:
     /**
-     * @brief Used to identify this class when returned as a handle to Test harness.
+     * @brief Used to identify this class when returned as a handle to Test Harness.
      * @sa ITaggedObject
      */
     static constexpr std::int64_t tag = 0x4000000000000000; // bit 62

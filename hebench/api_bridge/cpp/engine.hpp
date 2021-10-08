@@ -34,19 +34,19 @@ struct BenchmarkHandle
  * @brief Creates a new BaseEngine object.
  * @return A pointer to the newly created object.
  * @details
- * This is only a function prototype. Back-ends extending this C++ wrapper should provide
+ * This is only a function prototype. Backends extending this C++ wrapper should provide
  * an implementation to this function.
  *
  * This function is used by the C++ wrapper to create the engine during initialization, and
  * it is supposed to return a polymorphic pointer to the concrete engine class that will
- * drive the back-end.
+ * drive the backend.
  */
 BaseEngine *createEngine(); // implement this
 /**
  * @brief Destroys and cleans up resources from an engine created by createEngine().
  * @param[in] p Pointer to engine to destroy.
  * @details
- * This is only a function prototype. Back-ends extending this C++ wrapper should provide
+ * This is only a function prototype. Backends extending this C++ wrapper should provide
  * an implementation to this function.
  *
  * This function is used by the C++ wrapper to destroy the engine during clean up.
@@ -54,8 +54,8 @@ BaseEngine *createEngine(); // implement this
 void destroyEngine(BaseEngine *p); // implement this
 
 /**
- * @brief Base class that encapsulates common behavior of back-end engines.
- * @details Any back-end engine must derive from this class in order to take
+ * @brief Base class that encapsulates common behavior of backend engines.
+ * @details Any backend engine must derive from this class in order to take
  * advantage of the C++ wrapper boilerplate automation.
  */
 class BaseEngine : public ITaggedObject
@@ -72,7 +72,7 @@ public:
 
 public:
     /**
-     * @brief Used to identify this class when returned as a handle to Test harness.
+     * @brief Used to identify this class when returned as a handle to Test Harness.
      * @sa ITaggedObject
      */
     static constexpr std::int64_t tag = 0x8000000000000000; // bit 63
@@ -118,7 +118,7 @@ public:
                              const std::string &err_desc);
 
     /**
-     * @brief Retrieves back-end specific text description for a benchmark descriptor.
+     * @brief Retrieves backend specific text description for a benchmark descriptor.
      * @sa hebench::APIBridge::getBenchmarkDescriptionEx()
      */
     std::string getBenchmarkDescriptionEx(hebench::APIBridge::Handle h_bench_desc,
@@ -140,13 +140,13 @@ public:
     securityName() const { return m_map_security_name; }
 
     /**
-     * @brief Retrieves the number of benchmarks for which the back-end is registering
+     * @brief Retrieves the number of benchmarks for which the backend is registering
      * to perform.
      * @sa hebench::APIBridge::subscribeBenchmarksCount()
      */
     std::uint64_t subscribeBenchmarkCount() const { return m_descriptors.size(); }
     /**
-     * @brief Retrieves the benchmarks for which the back-end is registering to perform.
+     * @brief Retrieves the benchmarks for which the backend is registering to perform.
      * @sa hebench::APIBridge::subscribeBenchmarks()
      */
     void subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs) const;
@@ -242,7 +242,7 @@ public:
      * @return A pointer to an `EngineObject` instance that wraps the newly constructed
      * object of type `T`.
      * @details Pointers to `EngineObject` instances make easier to wrap
-     * back-end internal objects that need to cross the boundary of the API bridge. For
+     * backend internal objects that need to cross the boundary of the API bridge. For
      * easier use, see method createHandle().
      * @sa createHandle(), retrieveFromHandle()
      */
@@ -273,13 +273,13 @@ public:
 protected:
     BaseEngine();
     /**
-     * @brief Initializes the back-end engine and populates the back-end description.
+     * @brief Initializes the backend engine and populates the backend description.
      * @details
      * This method is called automatically during engine initialization.
      *
      * Derived classes should use this method to initialize this class and populate
-     * the descriptions for the benchmarks that this back-end will perform; and add
-     * error descriptions, scheme and security names for this back-end.
+     * the descriptions for the benchmarks that this backend will perform; and add
+     * error descriptions, scheme and security names for this backend.
      *
      * @sa addBenchmarkDescription(), addErrorCode(), addSchemeName(), addSecurityName()
      */
@@ -296,7 +296,7 @@ protected:
 
     /**
      * @brief Adds a new benchmark to the list of benchmarks to register by this
-     * back-end.
+     * backend.
      * @param[in] p_desc Object describing the new benchmark.
      * @details This method is to be called during engine initialization.
      * @sa init()
@@ -304,7 +304,7 @@ protected:
     void addBenchmarkDescription(std::shared_ptr<BenchmarkDescription> p_desc);
     /**
      * @brief Adds a new supported scheme and name pair to the list of schemes
-     * supported by this back-end.
+     * supported by this backend.
      * @param[in] scheme Scheme ID.
      * @param[in] name Corresponding name for the scheme.
      * @details This method is to be called during engine initialization.
@@ -313,7 +313,7 @@ protected:
     void addSchemeName(hebench::APIBridge::Scheme scheme, const std::string &name);
     /**
      * @brief Adds a new supported security and name pair to the list of securitty types
-     * supported by this back-end.
+     * supported by this backend.
      * @param[in] security Security ID.
      * @param[in] name Corresponding name for the new security type.
      * @details This method is to be called during engine initialization.
@@ -322,7 +322,7 @@ protected:
     void addSecurityName(hebench::APIBridge::Security security, const std::string &name);
     /**
      * @brief Adds a new error code and the error description to the list of possible
-     * error codes that this back-end can generate.
+     * error codes that this backend can generate.
      * @param[in] code Error code.
      * @param[in] description Description of the error as it will returned by
      * hebench::APIBridge::getErrorDescription().

@@ -28,7 +28,7 @@ ExampleBenchmarkDescription::ExampleBenchmarkDescription()
     m_descriptor.scheme   = HEBENCH_HE_SCHEME_PLAIN;
     m_descriptor.security = HEBENCH_HE_SECURITY_NONE;
     m_descriptor.other    = 0; // no extras needed for our purpose:
-        // Other back-ends can use this field to differentiate between
+        // Other backends can use this field to differentiate between
         // benchmarks for which internal parameters, not specified by
         // other fields of this structure, differ.
 
@@ -265,7 +265,7 @@ hebench::APIBridge::Handle ExampleBenchmark::operate(hebench::APIBridge::Handle 
     // method benchmarked by Test Harness.
 
     for (std::size_t i = 0; i < 2; ++i)
-        // normally, a robust back-end will use the indexers as appropriate,
+        // normally, a robust backend will use the indexers as appropriate,
         // but for the sake of the example, we just validate them
         if (p_param_indexers[i].value_index != 0 || p_param_indexers[i].batch_size != 1)
             throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid parameter indexer. Expected index 0 and batch size of 1."),
