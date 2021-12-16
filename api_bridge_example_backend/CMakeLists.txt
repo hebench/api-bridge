@@ -16,7 +16,27 @@ set(be_example_HEADERS
 
 add_library(${PROJECT_NAME} SHARED ${be_example_SOURCES} ${be_example_HEADERS})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--whole-archive" hebench_cpp "-Wl,--no-whole-archive")
+MACRO (TARGET_LINK_LIBRARIES_WHOLE_ARCHIVE target vis)
+  IF (WIN32)
+    FOREACH (arg IN LISTS ARGN)
+      SET_TARGET_PROPERTIES(
+        ${target} PROPERTIES LINK_FLAGS "/WHOLEARCHIVE:${lib}"
+      )
+    ENDFOREACH ()
+  ELSE ()
+    IF (APPLE)
+      SET(LINK_FLAGS "-Wl,-all_load")
+      SET(UNDO_FLAGS "-Wl,-noall_load")
+    ELSE ()
+      SET(LINK_FLAGS "-Wl,--whole-archive")
+      SET(UNDO_FLAGS "-Wl,--no-whole-archive")
+    ENDIF ()
+    TARGET_LINK_LIBRARIES(${target} ${vis} ${LINK_FLAGS} ${ARGN} ${UNDO_FLAGS})
+  ENDIF ()
+ENDMACRO ()
+
+TARGET_LINK_LIBRARIES_WHOLE_ARCHIVE(${PROJECT_NAME} PUBLIC hebench_cpp)
+
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
