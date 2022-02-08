@@ -74,7 +74,7 @@ public:
      * @throws std::out_of_range if \p index is out of range.
      */
     const T &get(std::size_t index) const;
-    const char *getName(std::size_t index) const { return m_w_params.at(index).name; }
+    const char *getName(std::size_t index) const { return getParams().at(index).name; }
 
     const std::vector<hebench::APIBridge::WorkloadParam> &getParams() const { return m_w_params; }
 
@@ -207,20 +207,38 @@ inline const double &Generic::get<double>(std::size_t index) const
 class MatrixMultiply : public Generic
 {
 public:
-    static constexpr const std::size_t MinRequiredParameters = 3;
+    enum : std::size_t
+    {
+        Index_RowsM0,
+        Index_ColsM0,
+        Index_ColsM1,
+        MinRequiredParameters
+    };
 
     /**
      * @brief Number of rows in matrix M0.
      */
-    std::uint64_t &rows_M0;
+    std::uint64_t rows_M0() const { return get<std::uint64_t>(Index_RowsM0); }
+    /**
+     * @brief Number of rows in matrix M0.
+     */
+    std::uint64_t &rows_M0() { return m_w_params.at(Index_RowsM0).u_param; }
     /**
      * @brief Number of columns in matrix M0 and rows in matrix M1.
      */
-    std::uint64_t &cols_M0;
+    std::uint64_t cols_M0() const { return get<std::uint64_t>(Index_ColsM0); }
+    /**
+     * @brief Number of columns in matrix M0 and rows in matrix M1.
+     */
+    std::uint64_t &cols_M0() { return m_w_params.at(Index_ColsM0).u_param; }
     /**
      * @brief Number of columns in matrix M1.
      */
-    std::uint64_t &cols_M1;
+    std::uint64_t cols_M1() const { return get<std::uint64_t>(Index_ColsM1); }
+    /**
+     * @brief Number of columns in matrix M1.
+     */
+    std::uint64_t &cols_M1() { return m_w_params.at(Index_ColsM1).u_param; }
 
 public:
     /**
@@ -231,11 +249,11 @@ public:
      * @param[in] _cols_M1 Number of columns in matrix M1.
      */
     MatrixMultiply(std::uint64_t _rows_M0 = 0, std::uint64_t _cols_M0 = 0, std::uint64_t _cols_M1 = 0) :
-        Generic(MinRequiredParameters), rows_M0(m_w_params.at(0).u_param), cols_M0(m_w_params.at(1).u_param), cols_M1(m_w_params.at(2).u_param)
+        Generic(MinRequiredParameters)
     {
-        this->set<std::uint64_t>(0, _rows_M0, "rows_M0");
-        this->set<std::uint64_t>(1, _cols_M0, "cols_M0");
-        this->set<std::uint64_t>(2, _cols_M1, "cols_M1");
+        this->set<std::uint64_t>(Index_RowsM0, _rows_M0, "rows_M0");
+        this->set<std::uint64_t>(Index_ColsM0, _cols_M0, "cols_M0");
+        this->set<std::uint64_t>(Index_ColsM1, _cols_M1, "cols_M1");
     }
 
     /**
@@ -251,7 +269,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     MatrixMultiply(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
-        Generic(w_params), rows_M0(m_w_params.at(0).u_param), cols_M0(m_w_params.at(1).u_param), cols_M1(m_w_params.at(2).u_param)
+        Generic(w_params)
     {
         validateParams();
     }
@@ -268,7 +286,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     MatrixMultiply(const hebench::APIBridge::WorkloadParams &w_params) :
-        Generic(w_params), rows_M0(m_w_params.at(0).u_param), cols_M0(m_w_params.at(1).u_param), cols_M1(m_w_params.at(2).u_param)
+        Generic(w_params)
     {
         validateParams();
     }
@@ -287,12 +305,20 @@ private:
 class VectorSize : public Generic
 {
 public:
-    static constexpr const std::size_t MinRequiredParameters = 1;
+    enum : std::size_t
+    {
+        Index_N,
+        MinRequiredParameters
+    };
 
     /**
      * @brief Number elements in a vector.
      */
-    std::uint64_t &n;
+    std::uint64_t n() const { return get<std::uint64_t>(Index_N); }
+    /**
+     * @brief Number elements in a vector.
+     */
+    std::uint64_t &n() { return m_w_params.at(Index_N).u_param; }
 
 public:
     /**
@@ -301,9 +327,9 @@ public:
      * @param[in] _n Number elements in a vector.
      */
     VectorSize(std::uint64_t _n = 0) :
-        Generic(MinRequiredParameters), n(m_w_params.at(0).u_param)
+        Generic(MinRequiredParameters)
     {
-        this->set<std::uint64_t>(0, _n, "n");
+        this->set<std::uint64_t>(Index_N, _n, "n");
     }
 
     /**
@@ -319,7 +345,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     VectorSize(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
-        Generic(w_params), n(m_w_params.at(0).u_param)
+        Generic(w_params)
     {
         validateParams();
     }
@@ -337,7 +363,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     VectorSize(const hebench::APIBridge::WorkloadParams &w_params) :
-        Generic(w_params), n(m_w_params.at(0).u_param)
+        Generic(w_params)
     {
         validateParams();
     }

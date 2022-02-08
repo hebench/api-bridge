@@ -35,9 +35,9 @@ ExampleBenchmarkDescription::ExampleBenchmarkDescription()
     // specify default arguments for this workload:
     // this benchmark will only support matrices of 100x100
     hebench::cpp::WorkloadParams::MatrixMultiply default_workload_params;
-    default_workload_params.rows_M0 = 100;
-    default_workload_params.cols_M0 = 100;
-    default_workload_params.cols_M1 = 100;
+    default_workload_params.rows_M0() = 100;
+    default_workload_params.cols_M0() = 100;
+    default_workload_params.cols_M1() = 100;
     this->addDefaultParameters(default_workload_params);
 }
 
@@ -87,9 +87,9 @@ ExampleBenchmark::ExampleBenchmark(ExampleEngine &engine,
 
     hebench::cpp::WorkloadParams::MatrixMultiply w_params(bench_params);
 
-    if (w_params.rows_M0 != 100
-        || w_params.cols_M0 != 100
-        || w_params.cols_M1 != 100)
+    if (w_params.rows_M0() != 100
+        || w_params.cols_M0() != 100
+        || w_params.cols_M1() != 100)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid workload parameters. This workload only supports matrices of dimensions 100 x 100."),
                                          HEBENCH_ECODE_INVALID_ARGS);
 
