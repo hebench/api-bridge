@@ -17,29 +17,33 @@ namespace cpp {
 namespace WorkloadParams {
 
 /**
- * @brief Wrapper around the flexible workload parameters.
+ * @brief Base wrapper around the flexible workload parameters.
  * @details This class helps to hide nuisances with workload parameters
  * values and types using templated methods. The templates are defined
  * only for the types supported by the flexible workload parameters.
  *
  * This class also serves as base class for wrappers for specific workloads.
+ * Clients can use this class as is, or use one of the specializations.
+ * Note that some specializations may handle nuisances of the workload
+ * parameters definition for the workload they represent, so, it is
+ * recommended to use the specializations when possible.
  */
-class Generic
+class Common
 {
 public:
-    Generic(std::size_t num_params = 0) :
+    Common(std::size_t num_params = 0) :
         m_w_params(num_params)
     {
     }
-    Generic(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
+    Common(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
         m_w_params(w_params)
     {
     }
-    Generic(const hebench::APIBridge::WorkloadParams &w_params) :
+    Common(const hebench::APIBridge::WorkloadParams &w_params) :
         m_w_params(w_params.params, w_params.params + w_params.count)
     {
     }
-    virtual ~Generic() = default;
+    virtual ~Common() = default;
 
     template <typename T>
     /**
@@ -89,7 +93,7 @@ protected:
 // Int64
 
 template <>
-inline void Generic::add<std::int64_t>(const std::int64_t &value, const std::string &name)
+inline void Common::add<std::int64_t>(const std::int64_t &value, const std::string &name)
 {
     m_w_params.push_back(hebench::APIBridge::WorkloadParam());
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.back();
@@ -100,7 +104,7 @@ inline void Generic::add<std::int64_t>(const std::int64_t &value, const std::str
 }
 
 template <>
-inline void Generic::set<std::int64_t>(std::size_t index, const std::int64_t &value, const std::string &name)
+inline void Common::set<std::int64_t>(std::size_t index, const std::int64_t &value, const std::string &name)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -110,7 +114,7 @@ inline void Generic::set<std::int64_t>(std::size_t index, const std::int64_t &va
 }
 
 template <>
-inline void Generic::set<std::int64_t>(std::size_t index, const std::int64_t &value)
+inline void Common::set<std::int64_t>(std::size_t index, const std::int64_t &value)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -119,7 +123,7 @@ inline void Generic::set<std::int64_t>(std::size_t index, const std::int64_t &va
 }
 
 template <>
-inline const std::int64_t &Generic::get<std::int64_t>(std::size_t index) const
+inline const std::int64_t &Common::get<std::int64_t>(std::size_t index) const
 {
     return m_w_params.at(index).i_param;
 }
@@ -127,7 +131,7 @@ inline const std::int64_t &Generic::get<std::int64_t>(std::size_t index) const
 // UInt64
 
 template <>
-inline void Generic::add<std::uint64_t>(const std::uint64_t &value, const std::string &name)
+inline void Common::add<std::uint64_t>(const std::uint64_t &value, const std::string &name)
 {
     m_w_params.push_back(hebench::APIBridge::WorkloadParam());
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.back();
@@ -138,7 +142,7 @@ inline void Generic::add<std::uint64_t>(const std::uint64_t &value, const std::s
 }
 
 template <>
-inline void Generic::set<std::uint64_t>(std::size_t index, const std::uint64_t &value, const std::string &name)
+inline void Common::set<std::uint64_t>(std::size_t index, const std::uint64_t &value, const std::string &name)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -148,7 +152,7 @@ inline void Generic::set<std::uint64_t>(std::size_t index, const std::uint64_t &
 }
 
 template <>
-inline void Generic::set<std::uint64_t>(std::size_t index, const std::uint64_t &value)
+inline void Common::set<std::uint64_t>(std::size_t index, const std::uint64_t &value)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -157,7 +161,7 @@ inline void Generic::set<std::uint64_t>(std::size_t index, const std::uint64_t &
 }
 
 template <>
-inline const std::uint64_t &Generic::get<std::uint64_t>(std::size_t index) const
+inline const std::uint64_t &Common::get<std::uint64_t>(std::size_t index) const
 {
     return m_w_params.at(index).u_param;
 }
@@ -165,7 +169,7 @@ inline const std::uint64_t &Generic::get<std::uint64_t>(std::size_t index) const
 // Float64
 
 template <>
-inline void Generic::add<double>(const double &value, const std::string &name)
+inline void Common::add<double>(const double &value, const std::string &name)
 {
     m_w_params.push_back(hebench::APIBridge::WorkloadParam());
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.back();
@@ -176,7 +180,7 @@ inline void Generic::add<double>(const double &value, const std::string &name)
 }
 
 template <>
-inline void Generic::set<double>(std::size_t index, const double &value, const std::string &name)
+inline void Common::set<double>(std::size_t index, const double &value, const std::string &name)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -186,7 +190,7 @@ inline void Generic::set<double>(std::size_t index, const double &value, const s
 }
 
 template <>
-inline void Generic::set<double>(std::size_t index, const double &value)
+inline void Common::set<double>(std::size_t index, const double &value)
 {
     hebench::APIBridge::WorkloadParam &w_param = m_w_params.at(index);
 
@@ -195,7 +199,7 @@ inline void Generic::set<double>(std::size_t index, const double &value)
 }
 
 template <>
-inline const double &Generic::get<double>(std::size_t index) const
+inline const double &Common::get<double>(std::size_t index) const
 {
     return m_w_params.at(index).f_param;
 }
@@ -204,7 +208,7 @@ inline const double &Generic::get<double>(std::size_t index) const
 // Workload parameter specialization classes
 //-------------------------------------------
 
-class MatrixMultiply : public Generic
+class MatrixMultiply : public Common
 {
 public:
     enum : std::size_t
@@ -249,7 +253,7 @@ public:
      * @param[in] _cols_M1 Number of columns in matrix M1.
      */
     MatrixMultiply(std::uint64_t _rows_M0 = 0, std::uint64_t _cols_M0 = 0, std::uint64_t _cols_M1 = 0) :
-        Generic(MinRequiredParameters)
+        Common(MinRequiredParameters)
     {
         this->set<std::uint64_t>(Index_RowsM0, _rows_M0, "rows_M0");
         this->set<std::uint64_t>(Index_ColsM0, _cols_M0, "cols_M0");
@@ -269,7 +273,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     MatrixMultiply(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
-        Generic(w_params)
+        Common(w_params)
     {
         validateParams();
     }
@@ -286,7 +290,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     MatrixMultiply(const hebench::APIBridge::WorkloadParams &w_params) :
-        Generic(w_params)
+        Common(w_params)
     {
         validateParams();
     }
@@ -302,7 +306,7 @@ private:
     }
 };
 
-class VectorSize : public Generic
+class VectorSize : public Common
 {
 public:
     enum : std::size_t
@@ -327,7 +331,7 @@ public:
      * @param[in] _n Number elements in a vector.
      */
     VectorSize(std::uint64_t _n = 0) :
-        Generic(MinRequiredParameters)
+        Common(MinRequiredParameters)
     {
         this->set<std::uint64_t>(Index_N, _n, "n");
     }
@@ -345,7 +349,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     VectorSize(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
-        Generic(w_params)
+        Common(w_params)
     {
         validateParams();
     }
@@ -363,7 +367,7 @@ public:
      * wrong format, a std::exception or derived type is thrown.
      */
     VectorSize(const hebench::APIBridge::WorkloadParams &w_params) :
-        Generic(w_params)
+        Common(w_params)
     {
         validateParams();
     }
@@ -371,6 +375,147 @@ public:
 private:
     void validateParams() const
     {
+        if (m_w_params.size() < MinRequiredParameters)
+            throw std::out_of_range("Workload requires, at least, " + std::to_string(MinRequiredParameters) + " parameters.");
+        for (std::size_t i = 0; i < MinRequiredParameters; ++i)
+            if (m_w_params[i].data_type != hebench::APIBridge::WorkloadParamType::UInt64)
+                throw std::logic_error("Data type for workload parameter " + std::to_string(i) + " must be WorkloadParamType::UInt64.");
+    }
+};
+
+/**
+ * @brief Wraps around flexible workload parameters required for a
+ * generic workload.
+ */
+class Generic : public Common
+{
+public:
+    enum : std::size_t
+    {
+        Index_N,
+        Index_M,
+    };
+
+    /**
+     * @brief Number of inputs to the operation.
+     */
+    const std::uint64_t &n() const { return get<std::uint64_t>(Index_N); }
+    /**
+     * @brief Number of outputs from the operation.
+     */
+    const std::uint64_t &m() const { return get<std::uint64_t>(Index_M); }
+    /**
+     * @brief Number of components in input vector at specified input index.
+     * @param[in] index Index of input component.
+     */
+    std::uint64_t length_InputParam(std::size_t index) const
+    {
+        if (index > n())
+            throw std::out_of_range(std::string(__func__) + ": Index out of range; "
+                                    + std::to_string(index) + ", expected less than " + std::to_string(n()) + ".");
+        return get<std::uint64_t>(index + 2);
+    }
+    /**
+     * @brief Number of elements in input vector at specified input index.
+     * @param[in] index Index of input component.
+     */
+    std::uint64_t &length_InputParam(std::size_t index)
+    {
+        if (index >= n())
+            throw std::out_of_range(std::string(__func__) + ": Index out of range; "
+                                    + std::to_string(index) + ", expected less than " + std::to_string(n()) + ".");
+        return m_w_params.at(index + 2).u_param;
+    }
+    /**
+     * @brief Number of elements in output vector at specified result index.
+     * @param[in] index Index of result component.
+     */
+    std::uint64_t length_ResultComponent(std::size_t index) const
+    {
+        if (index >= m())
+            throw std::out_of_range(std::string(__func__) + ": Index out of range; "
+                                    + std::to_string(index) + ", expected less than " + std::to_string(m()) + ".");
+        return get<std::uint64_t>(index + n() + 2);
+    }
+    /**
+     * @brief Number of elements in output vector at specified result index.
+     * @param[in] index Index of result component.
+     */
+    std::uint64_t &length_ResultComponent(std::size_t index)
+    {
+        if (index >= m())
+            throw std::out_of_range(std::string(__func__) + ": Index out of range; "
+                                    + std::to_string(index) + ", expected less than " + std::to_string(m()) + ".");
+        return m_w_params.at(index + n() + 2).u_param;
+    }
+
+public:
+    /**
+     * @brief Initializes a new object to represent workload parameters for a
+     * generic workload.
+     * @param[in] _n Number of inputs to the operation.
+     * @param[in] _m Number of outputs for the operation.
+     * @details
+     * This constructor will generate workload parameters according to the specification
+     * for generic workload. Since `ResultComponent` and `InputParam` depend on `m` and `n`
+     * respectively, clients should utilize accessor methods provided in this class. Accessing
+     * and changing workload parameters through the base `Generic` interface is discouraged
+     * and should only be done for advanced processing: incorrectly modifying the workload
+     * parameters may cause undefined results.
+     */
+    Generic(std::uint64_t _n = 1, std::uint64_t _m = 1) :
+        Common(_n + _m + 2)
+    {
+        this->set<std::uint64_t>(Index_N, _n, "n");
+        this->set<std::uint64_t>(Index_M, _m, "m");
+        for (std::size_t i = 0; i < _n; ++i)
+            set<std::uint64_t>(2 + i, 1, "length_InputParam" + std::to_string(i));
+        for (std::size_t i = 0; i < _m; ++i)
+            set<std::uint64_t>(2 + _n + i, 1, "length_ResultComponent" + std::to_string(i));
+    }
+
+    /**
+     * @brief Initializes workload parameters for a generic workload from a list of
+     * existing workload parameters.
+     * @param[in] w_params Workload parameters from which to initialize. These will
+     * be copied to internal representation.
+     * @throws std::out_of_range if number of elements in \p w_params is not enough
+     * to contain all required generic workload parameters.
+     * @throws std::logic_error if the type of any of the required parameters is
+     * incorrect.
+     * @details Workloads of this type require, at least, `m + n + 2` parameters as
+     * specified by their definition. If any of the parameters is missing or in the
+     * wrong format, a std::exception or derived type is thrown.
+     */
+    Generic(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
+        Common(w_params)
+    {
+        validateParams();
+    }
+
+    /**
+     * @brief Initializes workload parameters for a generic workload from a list of
+     * existing workload parameters.
+     * @param[in] w_params Workload parameters from which to initialize. These will
+     * be copied to internal representation.
+     * @throws std::out_of_range if number of elements in \p w_params is not enough
+     * to contain all required generic workload parameters.
+     * @throws std::logic_error if the type of any of the required parameters is
+     * incorrect.
+     * @details Workloads of this type require, at least, `m + n + 2` parameters as
+     * specified by their definition. If any of the parameters is missing or in the
+     * wrong format, a std::exception or derived type is thrown.
+     */
+    Generic(const hebench::APIBridge::WorkloadParams &w_params) :
+        Common(w_params)
+    {
+        validateParams();
+    }
+
+private:
+    void validateParams() const
+    {
+        const std::size_t MinRequiredParameters = n() + m() + 2;
         if (m_w_params.size() < MinRequiredParameters)
             throw std::out_of_range("Workload requires, at least, " + std::to_string(MinRequiredParameters) + " parameters.");
         for (std::size_t i = 0; i < MinRequiredParameters; ++i)
