@@ -194,7 +194,7 @@ enum Workload
      *
      * - 0: P(X) - scalar.
      * @code
-     * P(X) = sigmoid(W . X + b)
+     * P(X) = sigmoid_pd3(W . X + b)
      * @endcode
      * where `sigmoid_pd3` is the sigmoid function computed using
      * polynomial approximation of degree `3` around `x = 0`.
@@ -216,7 +216,7 @@ enum Workload
      *
      * - 0: P(X) - scalar.
      * @code
-     * P(X) = sigmoid(W . X + b)
+     * P(X) = sigmoid_pd5(W . X + b)
      * @endcode
      * where `sigmoid_pd5` is the sigmoid function computed using
      * polynomial approximation of degree `5` around `x = 0`.
@@ -238,13 +238,39 @@ enum Workload
      *
      * - 0: P(X) - scalar.
      * @code
-     * P(X) = sigmoid(W . X + b)
+     * P(X) = sigmoid_pd7(W . X + b)
      * @endcode
      * where `sigmoid_pd7` is the sigmoid function computed using
      * polynomial approximation of degree `7` around `x = 0`.
      *
      * For details see \ref logistic_regression .*/
-    LogisticRegression_PolyD7
+    LogisticRegression_PolyD7,
+    /*! Generic workload.
+     *
+     * Workload Params:
+     * - 0: `uint64` - Number of inputs to the operation: `n`.
+     * - 1: `uint64` - Number of outputs for the operation: `m`.
+     * - 2: `uint64` - Number of components in first input vector: `length_InputParam0`.
+     * - ...
+     * - `n + 1`: `uint64` - Number of components in last input vector: `length_InputParam`<i>n-1</i>.
+     * - `n + 2`: `uint64` - Number of components in first output vector: `length_ResultComponent0`.
+     * - ...
+     * - `m + n + 1`: `uint64` - Number of components in last output vector: `length_ResultComponent`<i>m-1</i>.
+     *
+     * Operation Params: `InputParam[i]` for `0 <= i < n`
+     * - i: `InputParam[i]` - vector with `length_InputParam`<i>i</i> contiguous elements in memory.
+     *
+     * Result: `ResultComponent[i]` for `0 <= i < m`
+     * - i: `ResultComponent[i]` - vector with `length_ResultComponent`<i>i</i> contiguous elements in memory.
+     *
+     * @code
+     * (ResultComponent[0], ResultComponent[1], ..., ResultComponent[m - 1])
+     *   = op(InputParam[0], InputParam[1], ..., InputParam[n - 1])
+     * @endcode
+     * where `op` is a bijective function defined by a user-provided mapping of inputs into outputs.
+     *
+     * For details see \ref generic_workload .*/
+    Generic
 };
 
 namespace WorkloadParamType {
