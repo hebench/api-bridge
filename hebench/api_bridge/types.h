@@ -252,16 +252,16 @@ enum Workload
      * - 1: `uint64` - Number of outputs for the operation: `m`.
      * - 2: `uint64` - Number of components in first input vector: `length_InputParam0`.
      * - ...
-     * - `n + 1`: `uint64` - Number of components in last input vector: `length_InputParam`*n-1*.
+     * - `n + 1`: `uint64` - Number of components in last input vector: `length_InputParam`<i>n-1</i>.
      * - `n + 2`: `uint64` - Number of components in first output vector: `length_ResultComponent0`.
      * - ...
-     * - `m + n + 1`: `uint64` - Number of components in last output vector: `length_ResultComponent`*m-1*.
+     * - `m + n + 1`: `uint64` - Number of components in last output vector: `length_ResultComponent`<i>m-1</i>.
      *
      * Operation Params: `InputParam[i]` for `0 <= i < n`
-     * - i: `InputParam[i]` - vector with `length_InputParam`*i* contiguous elements in memory.
+     * - i: `InputParam[i]` - vector with `length_InputParam`<i>i</i> contiguous elements in memory.
      *
      * Result: `ResultComponent[i]` for `0 <= i < m`
-     * - i: `ResultComponent[i]` - vector with `length_ResultComponent`*i* contiguous elements in memory.
+     * - i: `ResultComponent[i]` - vector with `length_ResultComponent`<i>i</i> contiguous elements in memory.
      *
      * @code
      * (ResultComponent[0], ResultComponent[1], ..., ResultComponent[m - 1])
