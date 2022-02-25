@@ -118,7 +118,7 @@ protected:
      * @details If this is not the first set added, \p default_params_set must represent a
      * set with the same amount of parameters as any other existing default parameter sets.
      */
-    void addDefaultParameters(const WorkloadParams::Generic &default_params_set);
+    void addDefaultParameters(const WorkloadParams::Common &default_params_set);
     /**
      * @brief Adds a new set of default arguments for the parameters for this
      * benchmark's workload.

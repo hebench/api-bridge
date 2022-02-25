@@ -30,7 +30,7 @@ void BenchmarkDescription::getBenchmarkDescriptor(hebench::APIBridge::BenchmarkD
     bench_desc = getBenchmarkDescriptor();
 }
 
-void BenchmarkDescription::addDefaultParameters(const WorkloadParams::Generic &default_params_set)
+void BenchmarkDescription::addDefaultParameters(const WorkloadParams::Common &default_params_set)
 {
     addDefaultParameters(default_params_set.getParams());
 }
