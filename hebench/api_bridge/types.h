@@ -101,7 +101,7 @@ enum Workload
      * @endcode
      *
      * For details see \ref matrix_multiplication .*/
-    MatrixMultiply,
+    MatrixMultiply = 1,
     /*! Vector Element-wise Addition workload.
      *
      * Workload Params:
@@ -280,7 +280,7 @@ namespace WorkloadParamType {
  */
 enum WorkloadParamType
 {
-    Int64, //!< 64 bits signed integers.
+    Int64 = 1, //!< 64 bits signed integers.
     UInt64, //!< 64 bits unsigned integers.
     Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
 };
@@ -356,7 +356,7 @@ struct WorkloadParams
  */
 enum DataType
 {
-    Int32, //!< 32 bits signed integers.
+    Int32 = 1, //!< 32 bits signed integers.
     Int64, //!< 64 bits signed integers.
     Float32, //!< 32 bits IEEE 754 standard floating point real numbers.
     Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
@@ -369,7 +369,7 @@ enum DataType
 enum Category
 {
     /*! Test Harness sends the same single data sample repeatedly to backend. */
-    Latency,
+    Latency = 1,
     /*! Test Harness loads the whole dataset to backend before requesting all the results in a single operation.<br>
      * For multiple samples on each input, the results are ordered in a row-major fashion.<br>
      * For more information, see \ref results_order .
@@ -392,67 +392,84 @@ typedef std::int32_t Security;
 
 /**
  * @brief Specifies parameters for a category.
- * @details This union is flexible to accomodate parameters for all categories.
+ * @details This type contains a union to accomodate parameters for all categories.
  * Clients must be mindful that writing data to parameters for a category
  * will overwrite data for all other categories in the same union, thus,
  * separate instaces of this type should be used for different categories.
  */
-union CategoryParams
+struct CategoryParams
 {
     /**
-     * @brief Generic placeholder for categories.
-     * @details This field is used to allocate memory for the whole union.
-     * It is advised to access the parameters through the respective category
-     * field instead.
+     * @brief Specifies the minimum time, in milliseconds, to run the test.
+     * @details
+     *
+     * Latency benchmark will submit an operation with the same set
+     * of inputs as many times as needed until the time elapsed during the test
+     * is, at least, the number of milliseconds specified.
+     *
+     * Offline benchmark will submit the complete dataset for the test in a single
+     * operation. Test Harness will continue to submit operation requests on the whole
+     * dataset until the time elapsed during the test is, at least, the number of
+     * milliseconds specified.
+     *
+     * A value of `0`, indicates that the minimum test time is user-specified at
+     * run-time via configuration files.
+     *
+     * Regardless of the time specified, for latency category, Test Harness will
+     * submit, at least, two iterations; and for offline category, Test Harness
+     * will submit, at least, one iteration.
+     *
+     * It is clear that the full test will take, at least, as much time as specified
+     * by this field, since the last operation request that satisfies the elapsed
+     * time will not be interrupted until it completes.
      */
-    std::uint64_t reserved[HEBENCH_MAX_CATEGORY_PARAMS];
-    struct
+    std::uint64_t min_test_time_ms;
+    union
     {
         /**
-         * @brief Specifies the minimum time, in milliseconds, to test for latency.
-         * @details Latency benchmark will submit an operation with the same set
-         * of inputs as many times as needed until the time elapsed during the test
-         * is, at least, the number of milliseconds specified. A value of 0, indicates
-         * to Test Harness to use default latency test time.
-         *
-         * Test Harness will submit, at least, two iterations regardless the time
-         * specified.
+         * @brief Generic placeholder for categories.
+         * @details This field is used to allocate memory for the whole union.
+         * It is advised to access the parameters through the respective category
+         * field instead.
          */
-        std::uint64_t min_test_time_ms;
-        /**
-         * @brief Specifies the number of warmup iterations to perform for latency
-         * test.
-         * @details Latency benchmark will run the operation this many iterations with
-         * the same set of inputs before doing any actual measurement. The operation
-         * results and measured times for the operation during warmup are not counted
-         * under the actual operation timing, although may be reported under warmup.
-         */
-        std::uint64_t warmup_iterations_count;
-    } latency; //!< Specifies the parameters for the latency category.
-    struct
-    {
-        /**
-         * @brief Specifies the number of data samples for each parameter for
-         * Category::Offline.
-         * @details This specifies the the number of samples submitted by Test Harness
-         * for each parameter for the offline operation.
-         *
-         * A value larger than available input samples will see the whole
-         * dataset of inputs be used for that parameter in a single operation. Note that
-         * in case that there is not enough data samples for a parameter, the number
-         * of samples will be lower than requested.
-         *
-         * A value of 0 indicates to Test Harness that number of samples for the
-         * corresponding operation parameter accepts any value. In this case, sample
-         * size is specified by Test Harness user options. If value specified by Test
-         * harness is `0`, the sample size for the operation parameter is defined in
-         * the workload specification.
-         *
-         * Regardless of the requested sample sizes (specified or default), the actual
-         * number of samples may be limited by the dataset for the workload, if any.
-         */
-        std::uint64_t data_count[HEBENCH_MAX_OP_PARAMS];
-    } offline; //!< Specifies the parameters for the offline category.
+        std::uint64_t reserved[HEBENCH_MAX_CATEGORY_PARAMS];
+        struct
+        {
+            /**
+             * @brief Specifies the number of warmup iterations to perform for latency
+             * test.
+             * @details Latency benchmark will run the operation this many iterations with
+             * the same set of inputs before doing any actual measurement. The operation
+             * results and measured times for the operation during warmup are not counted
+             * under the actual operation timing, although may be reported under warmup.
+             */
+            std::uint64_t warmup_iterations_count;
+        } latency; //!< Specifies the parameters for the latency category.
+        struct
+        {
+            /**
+             * @brief Specifies the number of data samples for each parameter for
+             * Category::Offline.
+             * @details This specifies the the number of samples submitted by Test Harness
+             * for each parameter for the offline operation.
+             *
+             * A value larger than available input samples will see the whole
+             * dataset of inputs be used for that parameter in a single operation. Note that
+             * in case that there is not enough data samples for a parameter, the number
+             * of samples will be lower than requested.
+             *
+             * A value of `0` indicates to Test Harness that number of samples for the
+             * corresponding operation parameter accepts any value. In this case, sample
+             * size is user-specified at run-time via configuration files. If value specified
+             * by Test user is also `0`, the sample size for the operation parameter is defined
+             * in the workload specification.
+             *
+             * Regardless of the sample sizes (specified or default), the actual
+             * number of samples may be limited by the dataset for the workload, if any.
+             */
+            std::uint64_t data_count[HEBENCH_MAX_OP_PARAMS];
+        } offline; //!< Specifies the parameters for the offline category.
+    };
 };
 
 /**
@@ -558,13 +575,16 @@ typedef _FlexibleData Handle;
 
 /**
  * @brief Defines a data package for an operation.
- * @details Field `param_position` specifies the zero-based position of the
- * data as a parameter in the call order for the operation to execute.
- * For example, in op(A, B, C), A is at position 0, B is at position 1,
- * C is at 2, and so on.
+ * @details
+ * This data pack contains a list of samples (one sample per `NativeDataBuffer`)
+ * for the same component.
  *
- * This data pack contains a list of samples for the same parameter which
- * will be addressed by index during the call to the operation.
+ * Field `param_position` specifies the zero-based position of the
+ * data as a parameter in the call order for the operation to execute, or
+ * the zero-based componenet in the result.
+ * For example, in `(R0, R1) = op(A, B, C)`, based on the input components:
+ * `A` is at position `0`, `B` is at position `1`, and `C` is at `2`;
+ * and for the output components: `R0` is at position `0`, and `R1` is at position `1`.
  */
 struct DataPack
 {
@@ -579,19 +599,27 @@ struct DataPack
  * in a single call instead of encoding each data pack at a time. This
  * is useful for backends to optimize large amounts of data.
  */
-struct PackedData
+struct DataPackCollection
 {
     DataPack *p_data_packs; //!< Collection of data packs.
     std::uint64_t pack_count; //!< Number of data packs in the collection.
 };
 
 /**
- * @brief Indexes a DataPack.
+ * @brief Indexes a `DataPack`.
  * @details In a call to operate(), a list of `ParameterIndexer` is passed,
- * where each element of that list corresponds to an operation parameter position
+ * where each element of that list corresponds to an input parameter position
  * in the call order. For that call to `operate()`, the `i`-th `ParameterIndexer`
- * specifies the index for the value to use from the corresponding `DataPack` and
- * how many values in the batch to use for the operation.
+ * specifies the index for the first component sample to use from the corresponding
+ * `DataPack` and how many values in the batch to use for the operation.
+ *
+ * Typically, for a latency benchmark, the indexer for each input component will
+ * be `value_index = 0` and `batch_size = 1`, indicating the first element of the
+ * dataset for that component.
+ *
+ * For an offline benchmark, unless otherwise specified, each input component will
+ * be `value_index = 0` and `batch_size = all_samples_for_component`, indicating
+ * the complete dataset.
  *
  * For details on the ordering of results based on the operation parameter sample
  * index see \ref results_order .
