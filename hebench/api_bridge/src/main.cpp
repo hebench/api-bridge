@@ -265,10 +265,10 @@ ErrorCode describeBenchmark(Handle h_engine,
     return retval;
 }
 
-ErrorCode initBenchmark(Handle h_engine,
-                        Handle h_bench_desc,
-                        const WorkloadParams *p_params,
-                        Handle *h_benchmark)
+ErrorCode createBenchmark(Handle h_engine,
+                          Handle h_bench_desc,
+                          const WorkloadParams *p_params,
+                          Handle *h_benchmark)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -302,7 +302,42 @@ ErrorCode initBenchmark(Handle h_engine,
     return retval;
 }
 
-ErrorCode encode(Handle h_benchmark, const PackedData *p_parameters, Handle *h_plaintext)
+ErrorCode initBenchmark(Handle h_benchmark,
+                        const BenchmarkDescriptor *p_concrete_desc)
+{
+    ErrorCode retval = HEBENCH_ECODE_SUCCESS;
+
+    try
+    {
+        if (!h_benchmark.p)
+            throw HEBenchError(HEBERROR_MSG("Invalid empty handle 'h_benchmark'"),
+                               HEBENCH_ECODE_CRITICAL_ERROR);
+        if (!p_concrete_desc)
+            throw HEBenchError(HEBERROR_MSG("Invalid null benchmark descriptor 'p_concrete_desc'"),
+                               HEBENCH_ECODE_CRITICAL_ERROR);
+
+        BenchmarkHandle *p_bh = reinterpret_cast<BenchmarkHandle *>(h_benchmark.p);
+        p_bh->p_benchmark->initialize(*p_concrete_desc);
+    }
+    catch (HEBenchError &hebench_err)
+    {
+        retval = hebench_err.getErrorCode();
+        BaseEngine::setLastError(hebench_err.getErrorCode(), hebench_err.what());
+    }
+    catch (std::exception &ex)
+    {
+        retval = HEBENCH_ECODE_CRITICAL_ERROR;
+        BaseEngine::setLastError(retval, ex.what());
+    }
+    catch (...)
+    {
+        retval = HEBENCH_ECODE_CRITICAL_ERROR;
+    }
+
+    return retval;
+}
+
+ErrorCode encode(Handle h_benchmark, const DataPackCollection *p_parameters, Handle *h_plaintext)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -339,7 +374,7 @@ ErrorCode encode(Handle h_benchmark, const PackedData *p_parameters, Handle *h_p
     return retval;
 }
 
-ErrorCode decode(Handle h_benchmark, Handle h_plaintext, PackedData *p_native)
+ErrorCode decode(Handle h_benchmark, Handle h_plaintext, DataPackCollection *p_native)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
