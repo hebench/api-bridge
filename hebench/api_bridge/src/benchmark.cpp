@@ -65,22 +65,33 @@ BaseBenchmark::BaseBenchmark(BaseEngine &engine,
         m_bench_params.assign(bench_params.params, bench_params.params + bench_params.count);
 }
 
-std::uint64_t BaseBenchmark::findDataPackIndex(const hebench::APIBridge::PackedData &parameters,
+void BaseBenchmark::initialize(const hebench::APIBridge::BenchmarkDescriptor &bench_desc_concrete)
+{
+    (void)bench_desc_concrete;
+}
+
+std::uint64_t BaseBenchmark::findDataPackIndex(const hebench::APIBridge::DataPackCollection &parameters,
                                                std::uint64_t param_position)
 {
     std::uint64_t retval = parameters.pack_count;
 
     if (parameters.p_data_packs)
     {
-        for (std::uint64_t i = 0; retval >= parameters.pack_count && i < parameters.pack_count; ++i)
-            if (parameters.p_data_packs[i].param_position == param_position)
-                retval = i;
+        if (param_position < parameters.pack_count
+            && parameters.p_data_packs[param_position].param_position == param_position)
+            retval = param_position;
+        else
+        {
+            for (std::uint64_t i = 0; retval >= parameters.pack_count && i < parameters.pack_count; ++i)
+                if (parameters.p_data_packs[i].param_position == param_position)
+                    retval = i;
+        } // end else
     } // end if
 
     return retval;
 }
 
-const hebench::APIBridge::DataPack &BaseBenchmark::findDataPack(const hebench::APIBridge::PackedData &parameters,
+const hebench::APIBridge::DataPack &BaseBenchmark::findDataPack(const hebench::APIBridge::DataPackCollection &parameters,
                                                                 std::uint64_t param_position)
 {
     std::uint64_t tmp_u64 = findDataPackIndex(parameters, param_position);
@@ -90,7 +101,7 @@ const hebench::APIBridge::DataPack &BaseBenchmark::findDataPack(const hebench::A
     return parameters.p_data_packs[tmp_u64];
 }
 
-hebench::APIBridge::DataPack &BaseBenchmark::findDataPack(hebench::APIBridge::PackedData &parameters,
+hebench::APIBridge::DataPack &BaseBenchmark::findDataPack(hebench::APIBridge::DataPackCollection &parameters,
                                                           std::uint64_t param_position)
 {
     std::uint64_t tmp_u64 = findDataPackIndex(parameters, param_position);

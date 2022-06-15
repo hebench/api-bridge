@@ -106,7 +106,8 @@ extern "C" ErrorCode describeBenchmark(Handle h_engine,
  * @param[in] p_params A set of parameters for the benchmark to be instantiated.
  * It is ignored if workload does not support parameters.
  * @param[out] h_benchmark Points to a handle to be filled with the initialized benchmark.
- * @return Error code.
+ * @return Error code `HEBENCH_ECODE_SUCCESS` on success, or any other error code if
+ * an error occurred during operation, including, unsupported workload parameters.
  * @details The returned benchmark handle will be used to reference this benchmark
  * while executing the benchmark operations by the Test Harness. Destroying or modifying
  * \p h_bench_desc or \p p_params must not affect the benchmark instantiation.
@@ -123,16 +124,39 @@ extern "C" ErrorCode describeBenchmark(Handle h_engine,
  *
  * @sa subscribeBenchmarks()
  */
-extern "C" ErrorCode initBenchmark(Handle h_engine,
-                                   Handle h_bench_desc,
-                                   const WorkloadParams *p_params,
-                                   Handle *h_benchmark);
+extern "C" ErrorCode createBenchmark(Handle h_engine,
+                                     Handle h_bench_desc,
+                                     const WorkloadParams *p_params,
+                                     Handle *h_benchmark);
+
+/**
+ * @brief Allows the benchmark to perform initialization steps based on the
+ * finalized, concrete description.
+ * @param[in] h_benchmark Handle to a benchmark created from `createBenchmark()`.
+ * @param[in] p_concrete_desc Benchmark descriptor filled out with all the concrete
+ * information about the requests for the benchmark to run.
+ * @return Error code `HEBENCH_ECODE_SUCCESS` on success, or any other error code if
+ * an error occurred during operation, including, unsupported description values.
+ * @details A subscribed benchmark description may include fields that accept
+ * user-specified values, such as sample sizes in an offline test, for example. Test
+ * Harness calls this function to indicate the concrete user-specified values for all
+ * fileds in the benchmark description.
+ *
+ * During benchmark creation, a backend only has access to the workload parameters and
+ * its own version of the description. A backend may use this function to perform extra
+ * initialization steps using the actual values for the user-specified fields in the
+ * benchmark description, if any.
+ *
+ * @sa createBenchmark()
+ */
+extern "C" ErrorCode initBenchmark(Handle h_benchmark,
+                                   const BenchmarkDescriptor *p_concrete_desc);
 
 /**
  * @brief Given a pack of parameters in raw, native data format, encodes them into
  * plain text suitable for backend encryption or operation.
  * @param[in] h_benchmark Handle to the initialized benchmark to perform.
- * @param[in] p_parameters Points to a PackedData instance containing the
+ * @param[in] p_parameters Points to a DataPackCollection instance containing the
  * information for the pack of parameters to encode.
  * @param[out] h_plaintext Opaque handle representing the resulting encoded data
  * by the backend.
@@ -155,7 +179,7 @@ extern "C" ErrorCode initBenchmark(Handle h_engine,
  * @sa decode()
  */
 extern "C" ErrorCode encode(Handle h_benchmark,
-                            const PackedData *p_parameters,
+                            const DataPackCollection *p_parameters,
                             Handle *h_plaintext);
 
 /**
@@ -184,7 +208,7 @@ extern "C" ErrorCode encode(Handle h_benchmark,
  */
 extern "C" ErrorCode decode(Handle h_benchmark,
                             Handle h_plaintext,
-                            PackedData *p_native);
+                            DataPackCollection *p_native);
 
 /**
  * @brief Encrypts a plain text into a cipher text.
@@ -235,28 +259,28 @@ extern "C" ErrorCode decrypt(Handle h_benchmark,
  * host into the actual device (accelerator, remote server, etc.) that will perform
  * the operations.
  *
- * Each handle in \p h_local_packed_params represents an encoded/encrypted PackedData
+ * Each handle in \p h_local_packed_params represents an encoded/encrypted DataPackCollection
  * object in the local host.
  *
- * In general, plain text parameters will be packed together under a single PackedData
+ * In general, plain text parameters will be packed together under a single DataPackCollection
  * during encoding, and encrypted parameters will be packed together under another
- * single PackedData. Handles for each PackedData are generated during encode() and
+ * single DataPackCollection. Handles for each DataPackCollection are generated during encode() and
  * encrypt() calls, and thus, \p h_local_packed_params collection allows for all of these
  * handles to be loaded at the same time. If not specified in the workload description,
- * the order for PackedData handles is encrypted first, followed by plain text when
+ * the order for DataPackCollection handles is encrypted first, followed by plain text when
  * both types of parameters, encrypted and plain text, are present; otherwise, Test
- * harness will use a single PackedData for all parameters as such:
+ * harness will use a single DataPackCollection for all parameters as such:
  *
  * All parameters encrypted, or all parameters plain text:
  * @code
- * h_local_packed_params[0] <- handle to PackedData containing all parameters.
+ * h_local_packed_params[0] <- handle to DataPackCollection containing all parameters.
  * local_count = 1
  * @endcode
  *
  * Mix of encrypted and plain text parameters:
  * @code
- * h_local_packed_params[0] <- handle to PackedData containing encrypted parameters.
- * h_local_packed_params[1] <- handle to PackedData containing plain text parameters.
+ * h_local_packed_params[0] <- handle to DataPackCollection containing encrypted parameters.
+ * h_local_packed_params[1] <- handle to DataPackCollection containing plain text parameters.
  * local_count = 2
  * @endcode
  *
@@ -286,7 +310,7 @@ extern "C" ErrorCode load(Handle h_benchmark,
  * must be issued to retrieve the data from the backend remote and store it in the
  * host.
  *
- * Each handle in \p h_local_packed_params will represent an encoded/encrypted PackedData
+ * Each handle in \p h_local_packed_params will represent an encoded/encrypted DataPackCollection
  * object after stored in the local host. If there are not enough handles in
  * \p h_local_packed_params to store all the data from \p h_remote, extra remote data
  * will be ignored. Any extra handles will be padded with zeroes.
@@ -365,7 +389,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * param_packs[1].buffer_count = B_count;
  * param_packs[1].param_position = 1; // B is the second parameter, so, position 1
  *
- * PackedData packed_parameters;
+ * DataPackCollection packed_parameters;
  * packed_parameters.p_data_packs = param_packs;
  * packed_parameters.pack_count = op_params_count;
  *
@@ -380,7 +404,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * // load encrypted data into backend's remote to use as input to the operation
  * Handle h_remote_inputs;
  * load(h_benchmark,
- *      &h_cipher_inputs, 1, // only 1 PackedData
+ *      &h_cipher_inputs, 1, // only 1 DataPackCollection
  *      &h_remote_inputs);
  *
  * // clean up data we no longer need (in reverse order of creation)
@@ -415,7 +439,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  *
  * // retrieve data from backend's remote and store in host
  * store(h_benchmark, h_remote_result,
- *       &h_cipher_output, 1 // Only 1 local PackedData for result expected for this operation.
+ *       &h_cipher_output, 1 // Only 1 local DataPackCollection for result expected for this operation.
  *      );
  *
  * // clean up data we no longer need
@@ -440,7 +464,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * results_pack.buffer_count = A_count * B_count;
  * results_pack.param_position = 0; // we are retrieving results in the first position into this data pack
  *
- * PackedData packed_results;
+ * DataPackCollection packed_results;
  * packed_results.p_data_packs = &results_pack;
  * packed_results.pack_count = 1; // result shape is [1, 10]
  *
@@ -554,14 +578,15 @@ extern "C" std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
  * @return Number of bytes needed in buffer to store the complete description,
  * including the C-string null terminator, or zero if error.
  * @details If \p p_description is null, this function performs no copy. Use
- * this behavior to obtain the size, in bytes, required to store the complete
- * description of the security scheme, including the C-string null terminator.
+ * this behavior to obtain the size, in bytes, required to store the full
+ * description of the error, including the C-string null terminator.
  *
  * If \p p_description is not null, this function copies as many bytes as specified
  * in \p size from the error description into the buffer pointed to by
  * \p p_description, including the C-string null terminator.
  */
 extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size);
+
 /**
  * @brief Retrieves the detailed description of the last error that occurred
  * during an operation on the engine.
@@ -571,8 +596,8 @@ extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description
  * @return Number of bytes needed in buffer to store the complete description,
  * including the C-string null terminator, or zero if error.
  * @details If \p p_description is null, this function performs no copy. Use
- * this behavior to obtain the size, in bytes, required to store the complete
- * description of the security scheme, including the C-string null terminator.
+ * this behavior to obtain the size, in bytes, required to store the full detailed
+ * description of the error, including the C-string null terminator.
  *
  * If \p p_description is not null, this function copies as many bytes as specified
  * in \p size from the error description into the buffer pointed to by

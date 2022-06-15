@@ -171,10 +171,20 @@ public:
                   const hebench::APIBridge::BenchmarkDescriptor &bench_desc);
     virtual ~BaseBenchmark() = default;
 
-    virtual hebench::APIBridge::Handle encode(const hebench::APIBridge::PackedData *p_parameters)          = 0;
-    virtual void decode(hebench::APIBridge::Handle encoded_data, hebench::APIBridge::PackedData *p_native) = 0;
-    virtual hebench::APIBridge::Handle encrypt(hebench::APIBridge::Handle encoded_data)                    = 0;
-    virtual hebench::APIBridge::Handle decrypt(hebench::APIBridge::Handle encrypted_data)                  = 0;
+    /**
+     * @brief Called by Test Harness with the concrete values for the benchmark description.
+     * @param[in] bench_desc_concrete Benchmark description with user-specified values
+     * properly assigned.
+     * @details Functionally equivalent to `hebench::APIBridge::initBenchmark()`.
+     *
+     * Default implementation performs no operations and returns immediately. Override this method
+     * to add different behavior.
+     */
+    virtual void initialize(const hebench::APIBridge::BenchmarkDescriptor &bench_desc_concrete);
+    virtual hebench::APIBridge::Handle encode(const hebench::APIBridge::DataPackCollection *p_parameters)          = 0;
+    virtual void decode(hebench::APIBridge::Handle encoded_data, hebench::APIBridge::DataPackCollection *p_native) = 0;
+    virtual hebench::APIBridge::Handle encrypt(hebench::APIBridge::Handle encoded_data)                            = 0;
+    virtual hebench::APIBridge::Handle decrypt(hebench::APIBridge::Handle encrypted_data)                          = 0;
 
     virtual hebench::APIBridge::Handle load(const hebench::APIBridge::Handle *p_local_data, std::uint64_t count)              = 0;
     virtual void store(hebench::APIBridge::Handle remote_data, hebench::APIBridge::Handle *p_local_data, std::uint64_t count) = 0;
@@ -192,36 +202,36 @@ public:
 
 protected:
     /**
-     * @brief Searches the specified PackedData for the DataPack in the corresponding position.
-     * @param[in] parameters PackedData to search.
+     * @brief Searches the specified DataPackCollection for the DataPack in the corresponding position.
+     * @param[in] parameters DataPackCollection to search.
      * @param[in] param_position Component position of the DataPack to find inside `parameters`.
      * @return The index of the DataPack inside `parameters` corresponding to the
      * specified `param_position` or parameters.pack_count if no DataPack for the
      * specified `param_position` is found.
      */
-    static std::uint64_t findDataPackIndex(const hebench::APIBridge::PackedData &parameters,
+    static std::uint64_t findDataPackIndex(const hebench::APIBridge::DataPackCollection &parameters,
                                            std::uint64_t param_position);
     /**
-     * @brief Searches the specified PackedData for the DataPack in the corresponding position.
-     * @param[in] parameters PackedData to search.
+     * @brief Searches the specified DataPackCollection for the DataPack in the corresponding position.
+     * @param[in] parameters DataPackCollection to search.
      * @param[in] param_position Component position of the DataPack to find inside `parameters`.
      * @return A reference to the DataPack inside `parameters` corresponding to the
      * specified `param_position`.
      * @throws hebench::cpp::HEBenchError if no DataPack for the specified `param_position`
      * is found.
      */
-    static const hebench::APIBridge::DataPack &findDataPack(const hebench::APIBridge::PackedData &parameters,
+    static const hebench::APIBridge::DataPack &findDataPack(const hebench::APIBridge::DataPackCollection &parameters,
                                                             std::uint64_t param_position);
     /**
-     * @brief Searches the specified PackedData for the DataPack in the corresponding position.
-     * @param[in] parameters PackedData to search.
+     * @brief Searches the specified DataPackCollection for the DataPack in the corresponding position.
+     * @param[in] parameters DataPackCollection to search.
      * @param[in] param_position Component position of the DataPack to find inside `parameters`.
      * @return A reference to the DataPack inside `parameters` corresponding to the
      * specified `param_position`.
      * @throws hebench::cpp::HEBenchError if no DataPack for the specified `param_position`
      * is found.
      */
-    static hebench::APIBridge::DataPack &findDataPack(hebench::APIBridge::PackedData &parameters,
+    static hebench::APIBridge::DataPack &findDataPack(hebench::APIBridge::DataPackCollection &parameters,
                                                       std::uint64_t param_position);
     void setDescriptor(const hebench::APIBridge::BenchmarkDescriptor &value) { m_bench_description = value; }
 
