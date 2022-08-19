@@ -245,6 +245,26 @@ enum Workload
      *
      * For details see \ref logistic_regression .*/
     LogisticRegression_PolyD7,
+    /*! Simple Set Intersection workload.
+     *
+     * Workload Params:
+     * - 0: `uint64` - Number of components in first input vector: `n`.
+     * - 1: `uint64` - Number of components in first input vector: `m`.
+     *
+     * Operation Params: `X`, `Y`
+     *
+     * - 0: `X` - set containing elements.
+     * - 1: `Y` - set containing elements.
+     *
+     * Result:
+     *
+     * - 0: `Z` - set.
+     * @code
+     * `Z` = {`x_0`, ..., `x_n` | `x_i` \in `X` and `x_i` in `Y`}
+     * @endcode
+     *
+     * For details see \ref simple_set_intersection .*/
+    SimpleSetIntersection,
     /*! Generic workload.
      *
      * Workload Params:
@@ -282,7 +302,8 @@ enum WorkloadParamType
 {
     Int64 = 1, //!< 64 bits signed integers.
     UInt64, //!< 64 bits unsigned integers.
-    Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
+    Float64, //!< 64 bits IEEE 754 standard floating point real numbers.
+    String //!< Alphanumeric representation.
 };
 
 } // namespace WorkloadParamType
@@ -359,7 +380,8 @@ enum DataType
     Int32 = 1, //!< 32 bits signed integers.
     Int64, //!< 64 bits signed integers.
     Float32, //!< 32 bits IEEE 754 standard floating point real numbers.
-    Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
+    Float64, //!< 64 bits IEEE 754 standard floating point real numbers.
+    String //!< Alphanumeric representation.
 };
 
 /**

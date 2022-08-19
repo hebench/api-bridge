@@ -528,6 +528,7 @@ typedef VectorSize EltwiseAdd;
 typedef VectorSize EltwiseMultiply;
 typedef VectorSize DotProduct;
 typedef VectorSize LogisticRegression;
+typedef VectorSize SimpleSetIntersection;
 
 } // namespace WorkloadParams
 } // namespace cpp
