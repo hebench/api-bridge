@@ -524,11 +524,98 @@ private:
     }
 };
 
+class SimpleSetIntersection : public Common
+{
+public:
+    enum : std::size_t
+    {
+        Index_N,
+        Index_M,
+        MinRequiredParameters
+    };
+
+    /**
+     * @brief Number of elements in set A.
+     */
+    std::uint64_t n() const { return get<std::uint64_t>(Index_N); }
+    /**
+     * @brief Number of elements in set A.
+     */
+    std::uint64_t &n() { return m_w_params.at(Index_N).u_param; }
+    /**
+     * @brief Number of elements in set B.
+     */
+    std::uint64_t m() const { return get<std::uint64_t>(Index_M); }
+    /**
+     * @brief Number of elements in set B.
+     */
+    std::uint64_t &m() { return m_w_params.at(Index_M).u_param; }
+
+public:
+    /**
+     * @brief Initializes a new object to represent workload parameters for simple
+     * set intersection.
+     * @param[in] _n Number of elements in set A.
+     * @param[in] _m Number of elements in set B.
+     */
+    SimpleSetIntersection(std::uint64_t _n = 0, std::uint64_t _m = 0) :
+        Common(MinRequiredParameters)
+    {
+        this->set<std::uint64_t>(Index_N, _n, "n");
+        this->set<std::uint64_t>(Index_M, _m, "m");
+    }
+
+    /**
+     * @brief Initializes workload parameters for simple set intersection from
+     * a list of existing workload parameters.
+     * @param[in] w_params Workload parameters from which to initialize. These will
+     * be copied to internal representation.
+     * @throws std::out_of_range if \p w_params does not have, at least, 2 parameters.
+     * @throws std::logic_error if the type of any of the required parameters is
+     * incorrect.
+     * @details Simple set intersection workload requires, at least, 2 parameters as
+     * specified by its definition. If any of the parameters is missing or in the
+     * wrong format, a std::exception or derived type is thrown.
+     */
+    SimpleSetIntersection(const std::vector<hebench::APIBridge::WorkloadParam> &w_params) :
+        Common(w_params)
+    {
+        validateParams();
+    }
+    /**
+     * @brief Initializes workload parameters for simple set intersection from
+     * a list of existing workload parameters.
+     * @param[in] w_params Workload parameters from which to initialize. These will
+     * be copied to internal representation.
+     * @throws std::out_of_range if \p w_params does not have, at least, 2 parameters.
+     * @throws std::logic_error if the type of any of the required parameters is
+     * incorrect.
+     * @details Simple set intersection workload requires, at least, 2 parameters as
+     * specified by its definition. If any of the parameters is missing or in the
+     * wrong format, a std::exception or derived type is thrown.
+     */
+    SimpleSetIntersection(const hebench::APIBridge::WorkloadParams &w_params) :
+        Common(w_params)
+    {
+        validateParams();
+    }
+
+private:
+    void validateParams() const
+    {
+        if (m_w_params.size() < MinRequiredParameters)
+            throw std::out_of_range("Workload requires, at least, " + std::to_string(MinRequiredParameters) + " parameters.");
+        for (std::size_t i = 0; i < MinRequiredParameters; ++i)
+            if (m_w_params[i].data_type != hebench::APIBridge::WorkloadParamType::UInt64)
+                throw std::logic_error("Data type for workload parameter " + std::to_string(i) + " must be WorkloadParamType::UInt64.");
+    }
+};
+
 typedef VectorSize EltwiseAdd;
 typedef VectorSize EltwiseMultiply;
 typedef VectorSize DotProduct;
 typedef VectorSize LogisticRegression;
-typedef VectorSize SimpleSetIntersection;
+// typedef VectorSize SimpleSetIntersection;
 
 } // namespace WorkloadParams
 } // namespace cpp
