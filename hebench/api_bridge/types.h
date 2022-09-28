@@ -250,7 +250,8 @@ enum Workload
      * Workload Params:
      * - 0: `uint64` - Number of components in first input vector: `n`.
      * - 1: `uint64` - Number of components in first input vector: `m`.
-     *
+     * - 2: `uint64` - Number of elements per item: `k`.
+     * 
      * Operation Params: `X`, `Y`
      *
      * - 0: `X` - set containing elements.
@@ -260,7 +261,7 @@ enum Workload
      *
      * - 0: `Z` - set.
      * @code
-     * `Z` = {`x_0`, ..., `x_n` | `x_i` \in `X` and `x_i` in `Y`}
+     * `Z` = {`x_0`, ..., `x_n`, where `x_i` in `X` and `x_i` in `Y`}
      * @endcode
      *
      * For details see \ref simple_set_intersection .*/
@@ -302,8 +303,7 @@ enum WorkloadParamType
 {
     Int64 = 1, //!< 64 bits signed integers.
     UInt64, //!< 64 bits unsigned integers.
-    Float64, //!< 64 bits IEEE 754 standard floating point real numbers.
-    String //!< Alphanumeric representation.
+    Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
 };
 
 } // namespace WorkloadParamType
@@ -380,8 +380,7 @@ enum DataType
     Int32 = 1, //!< 32 bits signed integers.
     Int64, //!< 64 bits signed integers.
     Float32, //!< 32 bits IEEE 754 standard floating point real numbers.
-    Float64, //!< 64 bits IEEE 754 standard floating point real numbers.
-    String //!< Alphanumeric representation.
+    Float64 //!< 64 bits IEEE 754 standard floating point real numbers.
 };
 
 /**

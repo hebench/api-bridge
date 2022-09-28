@@ -531,6 +531,7 @@ public:
     {
         Index_N,
         Index_M,
+        Index_K,
         MinRequiredParameters
     };
 
@@ -550,6 +551,14 @@ public:
      * @brief Number of elements in set B.
      */
     std::uint64_t &m() { return m_w_params.at(Index_M).u_param; }
+    /**
+     * @brief Number of items per element.
+     */
+    std::uint64_t k() const { return get<std::uint64_t>(Index_K); }
+    /**
+     * @brief Number of items per element.
+     */
+    std::uint64_t &k() { return m_w_params.at(Index_K).u_param; }
 
 public:
     /**
@@ -557,12 +566,14 @@ public:
      * set intersection.
      * @param[in] _n Number of elements in set A.
      * @param[in] _m Number of elements in set B.
+     * @param[in] _k Number of items per element.
      */
-    SimpleSetIntersection(std::uint64_t _n = 0, std::uint64_t _m = 0) :
+    SimpleSetIntersection(std::uint64_t _n = 0, std::uint64_t _m = 0, std::uint64_t _k = 1) :
         Common(MinRequiredParameters)
     {
         this->set<std::uint64_t>(Index_N, _n, "n");
         this->set<std::uint64_t>(Index_M, _m, "m");
+        this->set<std::uint64_t>(Index_K, _k, "k");
     }
 
     /**
@@ -615,7 +626,6 @@ typedef VectorSize EltwiseAdd;
 typedef VectorSize EltwiseMultiply;
 typedef VectorSize DotProduct;
 typedef VectorSize LogisticRegression;
-// typedef VectorSize SimpleSetIntersection;
 
 } // namespace WorkloadParams
 } // namespace cpp
