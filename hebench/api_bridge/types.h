@@ -248,20 +248,20 @@ enum Workload
     /*! Simple Set Intersection workload.
      *
      * Workload Params:
-     * - 0: `uint64` - Number of components in first input vector: `n`.
-     * - 1: `uint64` - Number of components in first input vector: `m`.
-     * - 2: `uint64` - Number of elements per item: `k`.
-     * 
+     * - 0: `uint64` - Size of dataset `X` (number of items in set): `n`.
+     * - 1: `uint64` - Size of dataset `Y` (number of items in set): `m`.
+     * - 2: `uint64` - Number of elements in an item of a dataset. Must be greater than `0`: `k`.
+     *
      * Operation Params: `X`, `Y`
      *
-     * - 0: `X` - set containing elements.
-     * - 1: `Y` - set containing elements.
+     * - 0: `X` - set containing `n` items.
+     * - 1: `Y` - set containing `m` items.
      *
      * Result:
      *
-     * - 0: `Z` - set.
+     * - 0: `Z` - set containing, at most, `min(n, m)` items.
      * @code
-     * `Z` = {`x_0`, ..., `x_n`, where `x_i` in `X` and `x_i` in `Y`}
+     * `Z` = {`z_0`, ..., `z_n`, where `z_i` in `X` and `z_i` in `Y`}
      * @endcode
      *
      * For details see \ref simple_set_intersection .*/
