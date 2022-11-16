@@ -259,12 +259,15 @@ void ExampleBenchmark::store(hebench::APIBridge::Handle remote_data,
 }
 
 hebench::APIBridge::Handle ExampleBenchmark::operate(hebench::APIBridge::Handle h_remote_packed,
-                                                     const hebench::APIBridge::ParameterIndexer *p_param_indexers)
+                                                     const hebench::APIBridge::ParameterIndexer *p_param_indexers,
+                                                     std::uint64_t indexers_count)
 {
     // This method should perform as fast as possible since it is the
     // method benchmarked by Test Harness.
 
-    for (std::size_t i = 0; i < 2; ++i)
+    std::uint64_t min_indexers_count = std::min<decltype(indexers_count)>(indexers_count, 2);
+
+    for (std::size_t i = 0; i < min_indexers_count; ++i)
         // normally, a robust backend will use the indexers as appropriate,
         // but for the sake of the example, we just validate them
         if (p_param_indexers[i].value_index != 0 || p_param_indexers[i].batch_size != 1)

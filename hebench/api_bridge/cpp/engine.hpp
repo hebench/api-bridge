@@ -32,6 +32,9 @@ struct BenchmarkHandle
 
 /**
  * @brief Creates a new BaseEngine object.
+ * @param[in] p_buffer Input buffer of bytes with extra information for engine
+ * initialization. May be `null` if no initialization data is available.
+ * @param[in] size Number of bytes pointed by \p p_buffer .
  * @return A pointer to the newly created object.
  * @details
  * This is only a function prototype. Backends extending this C++ wrapper should provide
@@ -40,8 +43,13 @@ struct BenchmarkHandle
  * This function is used by the C++ wrapper to create the engine during initialization, and
  * it is supposed to return a polymorphic pointer to the concrete engine class that will
  * drive the backend.
+ *
+ * Data in \p p_buffer is specified by frontend user through benchmark
+ * configuration files. Test Harness will forward this information to backend
+ * using this buffer. Utilization of this information is backend specific, and backends
+ * can ignore it.
  */
-BaseEngine *createEngine(); // implement this
+BaseEngine *createEngine(const std::int8_t *p_buffer, std::uint64_t size); // implement this
 /**
  * @brief Destroys and cleans up resources from an engine created by createEngine().
  * @param[in] p Pointer to engine to destroy.
