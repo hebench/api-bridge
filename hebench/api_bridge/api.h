@@ -57,8 +57,8 @@ extern "C" ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_
  * @param[in] h_engine Backend engine handle.
  * @param[out] p_h_bench_descs Pointer to array where to store the handles to the benchmark
  * descriptions. Array has capacity for \p count handles. Cannot be null.
- * @param[in] count Number of handles in array pointed by \p p_h_bench_descs . This is will
- * be as many handles as returned by `subscribeBenchmarksCount()`.
+ * @param[in] count Number of handles available in array pointed by \p p_h_bench_descs .
+ * This is will be as many handles as returned by `subscribeBenchmarksCount()`.
  * @return Error code.
  * @details The handles in \p p_h_bench_descs are pointed to the internal representation
  * of the description of each benchmark that the backend is registering to perform.
@@ -96,10 +96,14 @@ extern "C" ErrorCode getWorkloadParamsDetails(Handle h_engine,
  * @param[out] p_default_params Array of `WorkloadParams` that will receive the sets of
  * default parameters supported by this workload. It can be null if caller does not need
  * this information.
+ * @param[in] default_count Number of elements available in the array pointed by
+ * \p p_default_params . This is will be as many default flexible parameter sets as
+ * returned by `getWorkloadParamsDetails()`, or ignored if \p p_default_params is null.
  * @return Error code.
  * @details The array \p p_default_params is null if caller does not need the information
  * regarding default arguments for workload, otherwise, it must have enough capacity to
- * hold, at least, as many default sets as returned by getWorkloadParamsDetails().
+ * hold, at least, as many default sets as specified by \p default_count . The number of
+ * default sets in \p default_count should be the same as returned by `getWorkloadParamsDetails()`.
  * If workload does not support parameters, \p p_default_params is ignored.
  *
  * @sa getWorkloadParamsDetails()
@@ -107,7 +111,8 @@ extern "C" ErrorCode getWorkloadParamsDetails(Handle h_engine,
 extern "C" ErrorCode describeBenchmark(Handle h_engine,
                                        Handle h_bench_desc,
                                        BenchmarkDescriptor *p_bench_desc,
-                                       WorkloadParams *p_default_params);
+                                       WorkloadParams *p_default_params,
+                                       std::uint64_t default_count);
 /**
  * @brief Instantiates a benchmark on the backend.
  * @param[in] h_engine Handle to the backend engine to perform the benchmark.

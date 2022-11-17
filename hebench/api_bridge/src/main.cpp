@@ -231,7 +231,8 @@ ErrorCode getWorkloadParamsDetails(Handle h_engine,
 ErrorCode describeBenchmark(Handle h_engine,
                             Handle h_bench_desc,
                             BenchmarkDescriptor *p_bench_desc,
-                            WorkloadParams *p_default_params)
+                            WorkloadParams *p_default_params,
+                            std::uint64_t default_count)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -245,7 +246,7 @@ ErrorCode describeBenchmark(Handle h_engine,
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
         BaseEngine *p_engine = reinterpret_cast<BaseEngine *>(h_engine.p);
-        p_engine->describeBenchmark(h_bench_desc, p_bench_desc, p_default_params);
+        p_engine->describeBenchmark(h_bench_desc, p_bench_desc, p_default_params, default_count);
     }
     catch (HEBenchError &hebench_err)
     {

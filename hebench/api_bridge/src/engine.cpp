@@ -136,7 +136,8 @@ std::uint64_t BaseEngine::getDefaultWorkloadParamsCount(hebench::APIBridge::Hand
 
 void BaseEngine::describeBenchmark(hebench::APIBridge::Handle h_bench_desc,
                                    hebench::APIBridge::BenchmarkDescriptor *p_bench_desc,
-                                   hebench::APIBridge::WorkloadParams *p_default_params) const
+                                   hebench::APIBridge::WorkloadParams *p_default_params,
+                                   std::uint64_t default_count) const
 {
     if (!p_bench_desc)
         throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: p_bench_desc"),
@@ -149,13 +150,12 @@ void BaseEngine::describeBenchmark(hebench::APIBridge::Handle h_bench_desc,
 
     p_bd->getBenchmarkDescriptor(*p_bench_desc);
 
-    // return the default parameters
-    const auto &default_params = p_bd->getWorkloadDefaultParameters();
-    if (p_default_params && !default_params.empty())
+    if (p_default_params)
     {
-        // per specification of caller function, p_default_params must have enough space
-        // available to hold, at least, default_params.size() elements
-        for (std::size_t i = 0; i < default_params.size(); ++i)
+        // return the default parameters
+        const auto &default_params      = p_bd->getWorkloadDefaultParameters();
+        std::uint64_t min_default_count = std::min<std::uint64_t>(default_count, default_params.size());
+        for (std::size_t i = 0; i < min_default_count; ++i)
         {
             // all WorkloadParams elements in p_default_params must be pre-allocated by caller.
             if (p_default_params[i].count < default_params[i].size())

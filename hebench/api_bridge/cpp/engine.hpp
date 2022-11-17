@@ -171,7 +171,8 @@ public:
     std::uint64_t getDefaultWorkloadParamsCount(hebench::APIBridge::Handle h_bench_desc) const;
     void describeBenchmark(hebench::APIBridge::Handle h_bench_desc,
                            hebench::APIBridge::BenchmarkDescriptor *p_bench_desc,
-                           hebench::APIBridge::WorkloadParams *p_default_params) const;
+                           hebench::APIBridge::WorkloadParams *p_default_params,
+                           std::uint64_t default_count) const;
     /**
      * @brief Creates the benchmark specified by the descriptor.
      * @sa hebench::APIBridge::initBenchmark()
