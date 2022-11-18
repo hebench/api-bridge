@@ -17,6 +17,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE dl)
+
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(FILES ${${PROJECT_NAME}_HEADERS} DESTINATION include)

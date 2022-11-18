@@ -65,7 +65,12 @@ set(${CMAKE_PROJECT_NAME}_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/hebench/${CMAKE_PROJECT_NAME}/version.h"
     )
 
+add_library(${CMAKE_PROJECT_NAME} INTERFACE)
+target_include_directories(${CMAKE_PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
 # subprojects
 add_subdirectory(hebench/${CMAKE_PROJECT_NAME})
 add_subdirectory(${CMAKE_PROJECT_NAME}_example_backend)
 add_subdirectory(dynamic_lib_load)
+
+install(FILES ${${CMAKE_PROJECT_NAME}_HEADERS} DESTINATION include/hebench/${CMAKE_PROJECT_NAME})
