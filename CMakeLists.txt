@@ -68,4 +68,4 @@ set(${CMAKE_PROJECT_NAME}_HEADERS
 # subprojects
 add_subdirectory(hebench/${CMAKE_PROJECT_NAME})
 add_subdirectory(${CMAKE_PROJECT_NAME}_example_backend)
-
+add_subdirectory(dynamic_lib_load)
