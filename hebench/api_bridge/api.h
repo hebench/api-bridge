@@ -589,6 +589,8 @@ extern "C" std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
 
 /**
  * @brief Retrieves the general error description of an error code.
+ * @param[in] h_engine Handle to the backend engine. Can be a null handle
+ * (especially if there is no engine when the error occurred).
  * @param[in] code Error code to describe.
  * @param[out] p_description Buffer to store C-string description of the error.
  * @param[in] size Size in bytes of \p p_description buffer.
@@ -602,7 +604,7 @@ extern "C" std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
  * in \p size from the error description into the buffer pointed to by
  * \p p_description, including the C-string null terminator.
  */
-extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size);
+extern "C" std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size);
 
 /**
  * @brief Retrieves the detailed description of the last error that occurred

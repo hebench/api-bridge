@@ -712,8 +712,9 @@ std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
     return retval;
 }
 
-std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size)
+std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size)
 {
+    (void)h_engine; // not needed
     std::uint64_t retval = 0;
 
     try
