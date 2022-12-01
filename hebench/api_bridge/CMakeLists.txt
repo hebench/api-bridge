@@ -23,15 +23,13 @@ set(${PROJECT_NAME}_HEADERS
     )
 
 # target
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} ${${CMAKE_PROJECT_NAME}_HEADERS})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../..)
-
+target_link_libraries(${PROJECT_NAME} PUBLIC api_bridge)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -fPIC -Wall -Wextra)
 
 # installation steps
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(FILES ${${CMAKE_PROJECT_NAME}_HEADERS} DESTINATION include/hebench/${CMAKE_PROJECT_NAME})
 install(FILES ${${PROJECT_NAME}_HEADERS} DESTINATION include/hebench/${CMAKE_PROJECT_NAME}/cpp)
