@@ -16,9 +16,11 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
+# Link API Bridge Interface to the Dynamic Lib Loader
+target_link_libraries(${PROJECT_NAME} INTERFACE ${CMAKE_PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PRIVATE dl)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(FILES ${${PROJECT_NAME}_HEADERS} DESTINATION include)
+install(FILES ${${PROJECT_NAME}_HEADERS} DESTINATION include/hebench)
