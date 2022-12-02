@@ -297,3 +297,36 @@ std::uint64_t DynamicLibLoad::getLastErrorDescription(Handle h_engine, char *p_d
 
 } // namespace APIBridge
 } // namespace hebench
+
+namespace _api_test {
+// Make sure we are calling the right API Bridge functions:
+// this will cause compiler error if the API changed. Used for
+// development to monitor that the loader is loading the correct API.
+// This function is not called anywhere, it is here only for compiler test.
+int compiler_test()
+{
+    ::hebench::APIBridge::ExternFunctions f;
+    f.destroyHandle             = ::hebench::APIBridge::destroyHandle;
+    f.initEngine                = ::hebench::APIBridge::initEngine;
+    f.subscribeBenchmarksCount  = ::hebench::APIBridge::subscribeBenchmarksCount;
+    f.subscribeBenchmarks       = ::hebench::APIBridge::subscribeBenchmarks;
+    f.getWorkloadParamsDetails  = ::hebench::APIBridge::getWorkloadParamsDetails;
+    f.describeBenchmark         = ::hebench::APIBridge::describeBenchmark;
+    f.createBenchmark           = ::hebench::APIBridge::createBenchmark;
+    f.initBenchmark             = ::hebench::APIBridge::initBenchmark;
+    f.encode                    = ::hebench::APIBridge::encode;
+    f.decode                    = ::hebench::APIBridge::decode;
+    f.encrypt                   = ::hebench::APIBridge::encrypt;
+    f.decrypt                   = ::hebench::APIBridge::decrypt;
+    f.load                      = ::hebench::APIBridge::load;
+    f.store                     = ::hebench::APIBridge::store;
+    f.operate                   = ::hebench::APIBridge::operate;
+    f.getSchemeName             = ::hebench::APIBridge::getSchemeName;
+    f.getSchemeSecurityName     = ::hebench::APIBridge::getSchemeSecurityName;
+    f.getBenchmarkDescriptionEx = ::hebench::APIBridge::getBenchmarkDescriptionEx;
+    f.getErrorDescription       = ::hebench::APIBridge::getErrorDescription;
+    f.getLastErrorDescription   = ::hebench::APIBridge::getLastErrorDescription;
+
+    return 0;
+}
+} // namespace _api_test
