@@ -13,6 +13,11 @@ set(${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
     )
 set(${PROJECT_NAME}_HEADERS
+    # API Bridge
+    "${CMAKE_CURRENT_SOURCE_DIR}/api.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/types.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.h"
+    # C++ Wrapper
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/benchmark.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cpp/engine_object.hpp"

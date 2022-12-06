@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstring>
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #include "../include/ex_benchmark.h"
@@ -67,6 +68,19 @@ void ExampleBenchmarkDescription::destroyBenchmark(hebench::cpp::BaseBenchmark *
     } // end if
 }
 
+std::string ExampleBenchmarkDescription::getBenchmarkDescription(const hebench::APIBridge::WorkloadParams *p_w_params) const
+{
+    // Add extra description to your benchmark based on the workload configurable parameters, if any.
+    // This will be displayed at the end of the benchmark description section, and it is part
+    // of the report csv file.
+
+    (void)p_w_params;
+
+    std::stringstream ss;
+    ss << ", Example backend implementation.";
+    return ss.str();
+}
+
 //------------------------
 // class ExampleBenchmark
 //------------------------
@@ -100,6 +114,17 @@ ExampleBenchmark::ExampleBenchmark(ExampleEngine &engine,
 ExampleBenchmark::~ExampleBenchmark()
 {
     // nothing needed in this example
+}
+
+void ExampleBenchmark::initialize(const hebench::APIBridge::BenchmarkDescriptor &bench_desc_concrete)
+{
+    // Perform final initialization steps.
+    // This method receives the final version of the BenchmarkDescriptor.
+    // Initialize keys and other encryption parameters that depend on CategoryParams here.
+
+    // This method override is optional and can be omitted if not needed.
+
+    (void)bench_desc_concrete; // not needed in this example
 }
 
 hebench::APIBridge::Handle ExampleBenchmark::encode(const hebench::APIBridge::DataPackCollection *p_parameters)
@@ -223,6 +248,7 @@ hebench::APIBridge::Handle ExampleBenchmark::decrypt(hebench::APIBridge::Handle 
     return this->getEngine().template createHandle<decltype(p_encrypted_data)>(encrypted_data.size, 0,
                                                                                p_encrypted_data);
 }
+
 hebench::APIBridge::Handle ExampleBenchmark::load(const hebench::APIBridge::Handle *p_local_data, uint64_t count)
 {
     if (count != 1)

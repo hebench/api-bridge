@@ -16,7 +16,7 @@ public:
     HEBERROR_DECLARE_CLASS_NAME(ExampleBenchmarkDescription)
 
 public:
-    // This workload (MatrixMultiply) requires only 3 parameters
+    // This workload (MatrixMultiply) requires only 3 configurable parameters
     static constexpr std::uint64_t NumWorkloadParams = 3;
     ExampleBenchmarkDescription();
     ~ExampleBenchmarkDescription() override;
@@ -24,6 +24,8 @@ public:
     hebench::cpp::BaseBenchmark *createBenchmark(hebench::cpp::BaseEngine &engine,
                                                  const hebench::APIBridge::WorkloadParams *p_params) override;
     void destroyBenchmark(hebench::cpp::BaseBenchmark *p_bench) override;
+
+    std::string getBenchmarkDescription(const hebench::APIBridge::WorkloadParams *p_w_params) const override;
 };
 
 class ExampleBenchmark : public hebench::cpp::BaseBenchmark
@@ -39,6 +41,7 @@ public:
                      const hebench::APIBridge::WorkloadParams &bench_params);
     ~ExampleBenchmark() override;
 
+    void initialize(const hebench::APIBridge::BenchmarkDescriptor &bench_desc_concrete) override;
     hebench::APIBridge::Handle encode(const hebench::APIBridge::DataPackCollection *p_parameters) override;
     void decode(hebench::APIBridge::Handle encoded_data, hebench::APIBridge::DataPackCollection *p_native) override;
     hebench::APIBridge::Handle encrypt(hebench::APIBridge::Handle encoded_data) override;

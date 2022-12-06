@@ -157,7 +157,7 @@ public:
      * @brief Retrieves the benchmarks for which the backend is registering to perform.
      * @sa hebench::APIBridge::subscribeBenchmarks()
      */
-    void subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs) const;
+    void subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs, std::uint64_t count) const;
     /**
      * @brief Retrieves the number of workload parameters for the decribed benchmark.
      * @param[in] h_bench_desc Handle to benchmark description to query for information.

@@ -153,7 +153,7 @@ ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count)
     return retval;
 }
 
-ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
+ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -167,7 +167,7 @@ ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
         BaseEngine *p_engine = reinterpret_cast<BaseEngine *>(h_engine.p);
-        p_engine->subscribeBenchmarks(p_h_bench_descs);
+        p_engine->subscribeBenchmarks(p_h_bench_descs, count);
     }
     catch (HEBenchError &hebench_err)
     {

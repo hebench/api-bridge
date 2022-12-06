@@ -11,9 +11,9 @@ ErrorCode destroyHandle(Handle h)
     return DynamicLibLoad::destroyHandle(h);
 }
 
-ErrorCode initEngine(Handle *h_engine)
+ErrorCode initEngine(Handle *h_engine, const int8_t *p_buffer, uint64_t size)
 {
-    return DynamicLibLoad::initEngine(h_engine);
+    return DynamicLibLoad::initEngine(h_engine, p_buffer, size);
 }
 
 ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count)
@@ -21,9 +21,9 @@ ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count)
     return DynamicLibLoad::subscribeBenchmarksCount(h_engine, p_count);
 }
 
-ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
+ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count)
 {
-    return DynamicLibLoad::subscribeBenchmarks(h_engine, p_h_bench_descs);
+    return DynamicLibLoad::subscribeBenchmarks(h_engine, p_h_bench_descs, count);
 }
 
 ErrorCode getWorkloadParamsDetails(Handle h_engine, Handle h_bench_desc, std::uint64_t *p_param_count, std::uint64_t *p_default_count)
@@ -31,9 +31,13 @@ ErrorCode getWorkloadParamsDetails(Handle h_engine, Handle h_bench_desc, std::ui
     return DynamicLibLoad::getWorkloadParamsDetails(h_engine, h_bench_desc, p_param_count, p_default_count);
 }
 
-ErrorCode describeBenchmark(Handle h_engine, Handle h_bench_desc, BenchmarkDescriptor *p_bench_desc, WorkloadParams *p_default_params)
+ErrorCode describeBenchmark(Handle h_engine,
+                            Handle h_bench_desc,
+                            BenchmarkDescriptor *p_bench_desc,
+                            WorkloadParams *p_default_params,
+                            std::uint64_t default_count)
 {
-    return DynamicLibLoad::describeBenchmark(h_engine, h_bench_desc, p_bench_desc, p_default_params);
+    return DynamicLibLoad::describeBenchmark(h_engine, h_bench_desc, p_bench_desc, p_default_params, default_count);
 }
 
 ErrorCode createBenchmark(Handle h_engine, Handle h_bench_desc, const WorkloadParams *p_params, Handle *h_benchmark)
@@ -83,9 +87,10 @@ ErrorCode store(Handle h_benchmark,
 ErrorCode operate(Handle h_benchmark,
                   Handle h_remote_packed_params,
                   const ParameterIndexer *p_param_indexers,
+                  uint64_t indexers_count,
                   Handle *h_remote_output)
 {
-    return DynamicLibLoad::operate(h_benchmark, h_remote_packed_params, p_param_indexers, h_remote_output);
+    return DynamicLibLoad::operate(h_benchmark, h_remote_packed_params, p_param_indexers, indexers_count, h_remote_output);
 }
 
 std::uint64_t getSchemeName(Handle h_engine, Scheme s, char *p_name, std::uint64_t size)
@@ -107,9 +112,9 @@ std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
     return DynamicLibLoad::getBenchmarkDescriptionEx(h_engine, h_bench_desc, p_w_params, p_description, size);
 }
 
-std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size)
+std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size)
 {
-    return DynamicLibLoad::getErrorDescription(code, p_description, size);
+    return DynamicLibLoad::getErrorDescription(h_engine, code, p_description, size);
 }
 
 std::uint64_t getLastErrorDescription(Handle h_engine, char *p_description, std::uint64_t size)

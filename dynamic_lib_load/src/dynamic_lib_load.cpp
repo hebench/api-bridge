@@ -14,11 +14,11 @@ namespace APIBridge {
 
 typedef ErrorCode (*DestroyHandle)(Handle h);
 
-typedef ErrorCode (*InitEngine)(Handle *h_engine);
+typedef ErrorCode (*InitEngine)(Handle *h_engine, const int8_t *p_buffer, uint64_t size);
 
 typedef ErrorCode (*SubscribeBenchmarksCount)(Handle h_engine, std::uint64_t *p_count);
 
-typedef ErrorCode (*SubscribeBenchmarks)(Handle h_engine, Handle *p_bench_descs);
+typedef ErrorCode (*SubscribeBenchmarks)(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count);
 
 typedef ErrorCode (*GetWorkloadParamsDetails)(Handle h_engine,
                                               Handle h_bench_desc,
@@ -28,7 +28,8 @@ typedef ErrorCode (*GetWorkloadParamsDetails)(Handle h_engine,
 typedef ErrorCode (*DescribeBenchmark)(Handle h_engine,
                                        Handle h_bench_desc,
                                        BenchmarkDescriptor *p_bench_desc,
-                                       WorkloadParams *p_default_params);
+                                       WorkloadParams *p_default_params,
+                                       std::uint64_t default_count);
 
 typedef ErrorCode (*CreateBenchmark)(Handle h_engine,
                                      Handle h_bench_desc,
@@ -67,6 +68,7 @@ typedef ErrorCode (*Store)(Handle h_benchmark,
 typedef ErrorCode (*Operate)(Handle h_benchmark,
                              Handle h_remote_packed_params,
                              const ParameterIndexer *p_param_indexers,
+                             uint64_t indexers_count,
                              Handle *h_remote_output);
 
 typedef std::uint64_t (*GetSchemeName)(Handle h_engine, Scheme s, char *p_name, std::uint64_t size);
@@ -78,7 +80,7 @@ typedef std::uint64_t (*GetBenchmarkDescriptionEx)(Handle h_engine,
                                                    const hebench::APIBridge::WorkloadParams *p_w_params,
                                                    char *p_description, std::uint64_t size);
 
-typedef std::uint64_t (*GetErrorDescription)(ErrorCode code, char *p_description, std::uint64_t size);
+typedef std::uint64_t (*GetErrorDescription)(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size);
 
 typedef std::uint64_t (*GetLastErrorDescription)(Handle h_engine, char *p_description, std::uint64_t size);
 
@@ -188,9 +190,9 @@ ErrorCode DynamicLibLoad::destroyHandle(Handle h)
     return m_functions.destroyHandle(h);
 }
 
-ErrorCode DynamicLibLoad::initEngine(Handle *h_engine)
+ErrorCode DynamicLibLoad::initEngine(Handle *h_engine, const int8_t *p_buffer, uint64_t size)
 {
-    return m_functions.initEngine(h_engine);
+    return m_functions.initEngine(h_engine, p_buffer, size);
 }
 
 ErrorCode DynamicLibLoad::subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count)
@@ -198,9 +200,9 @@ ErrorCode DynamicLibLoad::subscribeBenchmarksCount(Handle h_engine, std::uint64_
     return m_functions.subscribeBenchmarksCount(h_engine, p_count);
 }
 
-ErrorCode DynamicLibLoad::subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
+ErrorCode DynamicLibLoad::subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count)
 {
-    return m_functions.subscribeBenchmarks(h_engine, p_h_bench_descs);
+    return m_functions.subscribeBenchmarks(h_engine, p_h_bench_descs, count);
 }
 
 ErrorCode DynamicLibLoad::getWorkloadParamsDetails(Handle h_engine, Handle h_bench_desc, std::uint64_t *p_param_count, std::uint64_t *p_default_count)
@@ -208,9 +210,13 @@ ErrorCode DynamicLibLoad::getWorkloadParamsDetails(Handle h_engine, Handle h_ben
     return m_functions.getWorkloadParamsDetails(h_engine, h_bench_desc, p_param_count, p_default_count);
 }
 
-ErrorCode DynamicLibLoad::describeBenchmark(Handle h_engine, Handle h_bench_desc, BenchmarkDescriptor *p_bench_desc, WorkloadParams *p_default_params)
+ErrorCode DynamicLibLoad::describeBenchmark(Handle h_engine,
+                                            Handle h_bench_desc,
+                                            BenchmarkDescriptor *p_bench_desc,
+                                            WorkloadParams *p_default_params,
+                                            std::uint64_t default_count)
 {
-    return m_functions.describeBenchmark(h_engine, h_bench_desc, p_bench_desc, p_default_params);
+    return m_functions.describeBenchmark(h_engine, h_bench_desc, p_bench_desc, p_default_params, default_count);
 }
 
 ErrorCode DynamicLibLoad::createBenchmark(Handle h_engine, Handle h_bench_desc, const WorkloadParams *p_params, Handle *h_benchmark)
@@ -261,9 +267,10 @@ ErrorCode DynamicLibLoad::store(Handle h_benchmark,
 ErrorCode DynamicLibLoad::operate(Handle h_benchmark,
                                   Handle h_remote_packed_params,
                                   const ParameterIndexer *p_param_indexers,
+                                  uint64_t indexers_count,
                                   Handle *h_remote_output)
 {
-    return m_functions.operate(h_benchmark, h_remote_packed_params, p_param_indexers, h_remote_output);
+    return m_functions.operate(h_benchmark, h_remote_packed_params, p_param_indexers, indexers_count, h_remote_output);
 }
 
 std::uint64_t DynamicLibLoad::getSchemeName(Handle h_engine, Scheme s, char *p_name, std::uint64_t size)
@@ -285,9 +292,9 @@ std::uint64_t DynamicLibLoad::getBenchmarkDescriptionEx(Handle h_engine,
     return m_functions.getBenchmarkDescriptionEx(h_engine, h_bench_desc, p_w_params, p_description, size);
 }
 
-std::uint64_t DynamicLibLoad::getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size)
+std::uint64_t DynamicLibLoad::getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size)
 {
-    return m_functions.getErrorDescription(code, p_description, size);
+    return m_functions.getErrorDescription(h_engine, code, p_description, size);
 }
 
 std::uint64_t DynamicLibLoad::getLastErrorDescription(Handle h_engine, char *p_description, std::uint64_t size)
@@ -326,6 +333,7 @@ int compiler_test()
     f.getBenchmarkDescriptionEx = ::hebench::APIBridge::getBenchmarkDescriptionEx;
     f.getErrorDescription       = ::hebench::APIBridge::getErrorDescription;
     f.getLastErrorDescription   = ::hebench::APIBridge::getLastErrorDescription;
+    (void)f;
 
     return 0;
 }

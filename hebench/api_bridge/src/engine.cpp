@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <new>
+#include <sstream>
 
 #include "hebench/api_bridge/cpp/benchmark.hpp"
 #include "hebench/api_bridge/cpp/engine.hpp"
@@ -102,13 +103,23 @@ std::shared_ptr<BenchmarkDescription> BaseEngine::matchBenchmark(hebench::APIBri
     return p_retval;
 }
 
-void BaseEngine::subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs) const
+void BaseEngine::subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs, std::uint64_t count) const
 {
     if (!p_h_bench_descs)
-        throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: p_h_bench_descs"),
+        throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: `p_h_bench_descs`."),
                            HEBENCH_ECODE_CRITICAL_ERROR);
+    if (count != static_cast<std::uint64_t>(m_descriptors.size()))
+    {
+        std::stringstream ss;
+        ss << "Invalid size parameter: `count`. Expected " << m_descriptors.size()
+           << ", but " << count << " received.";
+        throw HEBenchError(HEBERROR_MSG_CLASS(ss.str()),
+                           HEBENCH_ECODE_INVALID_ARGS);
+    } // end if
 
-    for (std::size_t i = 0; i < m_descriptors.size(); ++i)
+    std::uint64_t min_size = std::min(count, static_cast<std::uint64_t>(m_descriptors.size()));
+    assert(min_size == static_cast<std::uint64_t>(m_descriptors.size()));
+    for (std::size_t i = 0; i < min_size; ++i)
     {
         p_h_bench_descs[i].p    = (void *)(i);
         p_h_bench_descs[i].size = sizeof(BenchmarkDescription);
