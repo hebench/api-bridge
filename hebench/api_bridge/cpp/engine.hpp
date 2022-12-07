@@ -206,6 +206,27 @@ public:
     /**
      * @brief Duplicates a handle created by `createhandle()`.
      * @param[in] h Handle to duplicate.
+     * @param[in] new_tag New tag to set in the duplicated handle.
+     * @param[in] check_tags Tags to check for. If the input handle does not match this mask
+     * in a binary AND test, an exception is thrown.
+     * @return A new handle that points to the same internal representation as the input handle.
+     * size is also copied. This duplicate is a shallow copy. See remarks.
+     * @throws hebench::cpp::HEBenchError if tag check fails, or arguments are invalid (invalid
+     * `check_tags` or handle is null).
+     * @details
+     * Handles created by `createHandle()` point to internal representations that are reference
+     * counted. This method, returns a new handle that points to the same internal representation,
+     * but increases the reference count. Thus, both handles point to the same internal representation
+     * (shallow copy), but destroying each only decrements the reference count. The internal
+     * representation is actually destroyed when this reference count reaches 0.
+     *
+     * Warning: destroyed handles must not be duplicated. Attempting to duplicate a handle that
+     * has been destroyed will cause undefined behavior.
+     */
+    hebench::APIBridge::Handle duplicateHandle(hebench::APIBridge::Handle h, std::int64_t new_tag, std::int64_t check_tags) const;
+    /**
+     * @brief Duplicates a handle created by `createhandle()`.
+     * @param[in] h Handle to duplicate.
      * @param[in] check_tags Tags to check for. If the input handle does not match this mask
      * in a binary AND test, an exception is thrown.
      * @return A new handle that points to the same internal representation as the input handle.
@@ -220,7 +241,7 @@ public:
      * representation is actually destroyed when this reference count reaches 0.
      *
      * Warning: destroyed handles must not be duplicated. Attempting to duplicate a handle that
-     * has been already destroyed will cause undefined behavior.
+     * has been destroyed will cause undefined behavior.
      */
     hebench::APIBridge::Handle duplicateHandle(hebench::APIBridge::Handle h, std::int64_t check_tags = 0) const;
     template <class T, typename... Args>

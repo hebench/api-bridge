@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "../include/ex_benchmark.h"
@@ -129,18 +130,13 @@ void ExampleBenchmark::initialize(const hebench::APIBridge::BenchmarkDescriptor 
 
 hebench::APIBridge::Handle ExampleBenchmark::encode(const hebench::APIBridge::DataPackCollection *p_parameters)
 {
-    if (p_parameters->pack_count != ParametersCount)
+    if (p_parameters->pack_count != ExampleBenchmarkDescription::NumOperands)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid number of parameters detected in parameter pack. Expected 2."),
                                          HEBENCH_ECODE_INVALID_ARGS);
 
     // allocate our internal version of the encoded data
 
-    // We are using shared_ptr because we want to be able to copy the pointer object later
-    // and use the reference counter to avoid leaving dangling. If our internal object
-    // does not need to be copied, shared_ptr is not really needed.
-    std::shared_ptr<std::vector<Matrix>> p_params =
-        std::make_shared<std::vector<Matrix>>(p_parameters->pack_count);
-    std::vector<Matrix> &params = *p_params;
+    std::vector<Matrix> params(p_parameters->pack_count);
 
     // encode the packed parameters into our internal version
     for (std::uint64_t param_i = 0; param_i < p_parameters->pack_count; ++param_i)
@@ -170,26 +166,37 @@ hebench::APIBridge::Handle ExampleBenchmark::encode(const hebench::APIBridge::Da
         } // end for
     } // end for
 
-    // wrap our internal object into a handle to cross the boundary of the API Bridge
-    return this->getEngine().template createHandle<decltype(p_params)>(sizeof(Matrix) * params.size(), 0,
-                                                                       p_params);
+    // wrap our internal object into a handle to cross the boundary of the API Bridge:
+    // the returned object must be copyable or movable to avoid destroying when out of scope.
+    return this->getEngine().template createHandle<decltype(params)>(sizeof(params),
+                                                                     tagEncodeOutput, // optional tag to identify object in handle (set to 0 if not needed)
+                                                                     // move our internal object into the handle
+                                                                     std::move(params));
 }
 
 void ExampleBenchmark::decode(hebench::APIBridge::Handle encoded_data, hebench::APIBridge::DataPackCollection *p_native)
 {
-    // This method should handle decoding of data encoded using encode(), due to
-    // specification stating that encode() and decode() are inverses; as well as
-    // handle data decrypted from operation() results.
+    // The default data flow only requires that this method is able to decode
+    // data decrypted from operation() results, unless otherwise specified, in
+    // which case this method must also be able to handle decoding of data
+    // encoded using encode(), due to full specification stating that encode()
+    // and decode() are inverses.
+
+    // In this implementation, we handle default flow since it is the only required
+    // for matrix multiplication.
 
     // retrieve our internal format object from the handle
-    const std::vector<Matrix> &params =
-        *this->getEngine().template retrieveFromHandle<std::shared_ptr<std::vector<Matrix>>>(encoded_data);
+    const std::vector<Matrix> &local_encoded_data =
+        this->getEngine().template retrieveFromHandle<std::vector<Matrix>>(encoded_data,
+                                                                           tagDecryptOutput); // expected input tag
 
     // according to specification, we must decode as much data as possible, where
     // any excess encoded data that won't fit into the pre-allocated native buffer
     // shall be ignored
 
-    std::uint64_t min_param_count = std::min(p_native->pack_count, params.size());
+    // this should be only 0 or 1, since our result has one component
+    std::uint64_t min_param_count = std::min(p_native->pack_count,
+                                             static_cast<std::uint64_t>(local_encoded_data.size()));
     for (std::size_t param_i = 0; param_i < min_param_count; ++param_i)
     {
         hebench::APIBridge::DataPack *p_native_param = &p_native->p_data_packs[param_i];
@@ -202,7 +209,7 @@ void ExampleBenchmark::decode(hebench::APIBridge::Handle encoded_data, hebench::
             // copy each row for the current parameter matrix into the corresponding
             // decoded buffer
 
-            const Matrix &mat = params[param_i]; // alias for clarity
+            const Matrix &mat = local_encoded_data[param_i]; // alias for clarity
 
             std::uint64_t sample_elem_count = // number of doubles in decoded buffer
                 native_sample.size / sizeof(double);
@@ -230,23 +237,39 @@ void ExampleBenchmark::decode(hebench::APIBridge::Handle encoded_data, hebench::
 hebench::APIBridge::Handle ExampleBenchmark::encrypt(hebench::APIBridge::Handle encoded_data)
 {
     // we only do plain text in this example, so, just return a copy of our internal data
-    std::shared_ptr<void> p_encoded_data =
-        this->getEngine().template retrieveFromHandle<std::shared_ptr<void>>(encoded_data);
+    const std::vector<Matrix> &local_encoded_data =
+        this->getEngine().template retrieveFromHandle<std::vector<Matrix>>(encoded_data,
+                                                                           tagEncodeOutput); // expected input tag
 
-    // the copy is shallow, but shared_ptr ensures correct destruction using reference counting
-    return this->getEngine().template createHandle<decltype(p_encoded_data)>(encoded_data.size, 0,
-                                                                             p_encoded_data);
+    // Deep copy is performed for illustrative purposes only. A shallow copy is faster
+    // using Engine::duplicateHandle() as in load() and store(), but encryption
+    // usually takes longer than a shallow copy, so, deep copy shows a better example
+    // here.
+
+    std::vector<Matrix> encrypted_data = local_encoded_data;
+
+    return this->getEngine().template createHandle<decltype(encrypted_data)>(sizeof(Matrix) * encrypted_data.size(),
+                                                                             tagEncryptOutput,
+                                                                             std::move(encrypted_data));
 }
 
 hebench::APIBridge::Handle ExampleBenchmark::decrypt(hebench::APIBridge::Handle encrypted_data)
 {
     // we only do plain text in this example, so, just return a copy of our internal data
-    std::shared_ptr<void> p_encrypted_data =
-        this->getEngine().template retrieveFromHandle<std::shared_ptr<void>>(encrypted_data);
+    const std::vector<Matrix> &local_encrypted_data =
+        this->getEngine().template retrieveFromHandle<std::vector<Matrix>>(encrypted_data,
+                                                                           tagStoreOutput); // expected input tag
 
-    // the copy is shallow, but shared_ptr ensures correct destruction using reference counting
-    return this->getEngine().template createHandle<decltype(p_encrypted_data)>(encrypted_data.size, 0,
-                                                                               p_encrypted_data);
+    // Deep copy is performed for illustrative purposes only. A shallow copy is faster
+    // using Engine::duplicateHandle() as in load() and store(), but decryption
+    // usually takes longer than a shallow copy, so, deep copy shows a better example
+    // here.
+
+    std::vector<Matrix> decrypted_data = local_encrypted_data;
+
+    return this->getEngine().template createHandle<decltype(decrypted_data)>(sizeof(Matrix) * decrypted_data.size(),
+                                                                             tagDecryptOutput,
+                                                                             std::move(decrypted_data));
 }
 
 hebench::APIBridge::Handle ExampleBenchmark::load(const hebench::APIBridge::Handle *p_local_data, uint64_t count)
@@ -259,10 +282,13 @@ hebench::APIBridge::Handle ExampleBenchmark::load(const hebench::APIBridge::Hand
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid null array of handles: \"p_local_data\""),
                                          HEBENCH_ECODE_INVALID_ARGS);
 
-    // since remote and host are the same for this example, we just need to return a copy
-    // of the local data as remote.
+    // Since remote and host are the same for this example, we just need to return a
+    // shallow copy of the local data as remote. Engine::duplicateHandle() takes care
+    // of proper duplication without risk of dangling handles after destruction.
 
-    return this->getEngine().duplicateHandle(p_local_data[0]);
+    return this->getEngine().duplicateHandle(p_local_data[0],
+                                             tagLoadOutput, // output tag
+                                             tagEncryptOutput); // expected input tag
 }
 
 void ExampleBenchmark::store(hebench::APIBridge::Handle remote_data,
@@ -277,10 +303,13 @@ void ExampleBenchmark::store(hebench::APIBridge::Handle remote_data,
         // pad with zeros any remaining local handles as per specifications
         std::memset(p_local_data, 0, sizeof(hebench::APIBridge::Handle) * count);
 
-        // since remote and host are the same for this example, we just need to return a copy
-        // of the remote as local data.
+        // Since remote and host are the same for this example, we just need to return a
+        // shallow copy of the remote data as local. Engine::duplicateHandle() takes care
+        // of proper duplication without risk of dangling handles after destruction.
 
-        p_local_data[0] = this->getEngine().duplicateHandle(remote_data);
+        p_local_data[0] = this->getEngine().duplicateHandle(remote_data,
+                                                            tagStoreOutput, // output tag
+                                                            tagOperateOutput); // expected input tag
     } // end if
 }
 
@@ -291,25 +320,30 @@ hebench::APIBridge::Handle ExampleBenchmark::operate(hebench::APIBridge::Handle 
     // This method should perform as fast as possible since it is the
     // method benchmarked by Test Harness.
 
-    std::uint64_t min_indexers_count = std::min<decltype(indexers_count)>(indexers_count, 2);
+    // No other methods should perform parts of the operation. If the implementation
+    // is asyncronous, this method should give the signal to start the operation
+    // and block until it has completed.
+
+    std::uint64_t min_indexers_count = std::min<decltype(indexers_count)>(indexers_count,
+                                                                          ExampleBenchmarkDescription::NumOperands);
 
     for (std::size_t i = 0; i < min_indexers_count; ++i)
-        // normally, a robust backend will use the indexers as appropriate,
-        // but for the sake of the example, we just validate them
+        // A robust backend uses the indexers as appropriate for the benchmarking
+        // category. For latency, we just validate them.
         if (p_param_indexers[i].value_index != 0 || p_param_indexers[i].batch_size != 1)
             throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid parameter indexer. Expected index 0 and batch size of 1."),
                                              HEBENCH_ECODE_INVALID_ARGS);
 
     // retrieve our internal format object from the handle
     const std::vector<Matrix> &params =
-        *this->getEngine().template retrieveFromHandle<std::shared_ptr<std::vector<Matrix>>>(h_remote_packed);
+        this->getEngine().template retrieveFromHandle<std::vector<Matrix>>(h_remote_packed,
+                                                                           tagLoadOutput); // expected input tag
 
     // create a new internal object for result
-    std::uint64_t components_count                = ResultComponentsCount;
-    std::shared_ptr<std::vector<Matrix>> p_result = std::make_shared<std::vector<Matrix>>(components_count);
+    std::vector<Matrix> result_vector(ExampleBenchmarkDescription::NumOpResultComponents);
 
     // perform the actual operation
-    Matrix &result = p_result->front(); // alias the pointer for clarity
+    Matrix &result = result_vector.front(); // alias the component for clarity
     for (std::size_t row_0_i = 0; row_0_i < params[0].rows.size(); ++row_0_i)
     {
         for (std::size_t col_0_i = 0; col_0_i < params[0].rows[row_0_i].size(); ++col_0_i)
@@ -322,6 +356,7 @@ hebench::APIBridge::Handle ExampleBenchmark::operate(hebench::APIBridge::Handle 
     } // end for
 
     // send our internal result across the boundary of the API Bridge as a handle
-    return this->getEngine().template createHandle<decltype(p_result)>(sizeof(Matrix) * p_result->size(), 0,
-                                                                       p_result);
+    return this->getEngine().template createHandle<decltype(result_vector)>(sizeof(Matrix) * result_vector.size(),
+                                                                            tagOperateOutput,
+                                                                            std::move(result_vector));
 }

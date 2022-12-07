@@ -18,6 +18,10 @@ public:
 public:
     // This workload (MatrixMultiply) requires only 3 configurable parameters
     static constexpr std::uint64_t NumWorkloadParams = 3;
+    // This workload has 2 operands.
+    static constexpr std::uint64_t NumOperands = 2;
+    // This workload result has only 1 component (the resulting matrix).
+    static constexpr std::uint64_t NumOpResultComponents = 1;
     ExampleBenchmarkDescription();
     ~ExampleBenchmarkDescription() override;
 
@@ -58,8 +62,13 @@ public:
     std::int64_t classTag() const override { return BaseBenchmark::classTag() | ExampleBenchmark::tag; }
 
 private:
-    static constexpr std::uint64_t ParametersCount       = 2; // number of parameters for this operation
-    static constexpr std::uint64_t ResultComponentsCount = 1; // number of components of result for this operation
+    static constexpr std::int64_t tagEncodeOutput  = 0x10;
+    static constexpr std::int64_t tagDecodeOutput  = 0x20;
+    static constexpr std::int64_t tagEncryptOutput = 0x40;
+    static constexpr std::int64_t tagDecryptOutput = 0x80;
+    static constexpr std::int64_t tagLoadOutput    = 0x100;
+    static constexpr std::int64_t tagStoreOutput   = 0x200;
+    static constexpr std::int64_t tagOperateOutput = 0x400;
 
     struct Matrix
     {
