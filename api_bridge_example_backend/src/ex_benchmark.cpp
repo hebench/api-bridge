@@ -286,9 +286,14 @@ hebench::APIBridge::Handle ExampleBenchmark::load(const hebench::APIBridge::Hand
     // shallow copy of the local data as remote. Engine::duplicateHandle() takes care
     // of proper duplication without risk of dangling handles after destruction.
 
+    std::int64_t expected_tag = tagEncryptOutput;
+    if ((p_local_data[0].tag & tagEncodeOutput) == tagEncodeOutput)
+        // data handle came directly from encode
+        expected_tag = tagEncodeOutput;
+
     return this->getEngine().duplicateHandle(p_local_data[0],
                                              tagLoadOutput, // output tag
-                                             tagEncryptOutput); // expected input tag
+                                             expected_tag); // expected input tag
 }
 
 void ExampleBenchmark::store(hebench::APIBridge::Handle remote_data,
@@ -324,8 +329,9 @@ hebench::APIBridge::Handle ExampleBenchmark::operate(hebench::APIBridge::Handle 
     // is asyncronous, this method should give the signal to start the operation
     // and block until it has completed.
 
-    std::uint64_t min_indexers_count = std::min<decltype(indexers_count)>(indexers_count,
-                                                                          ExampleBenchmarkDescription::NumOperands);
+    std::uint64_t min_indexers_count = ExampleBenchmarkDescription::NumOperands;
+    if (min_indexers_count > indexers_count)
+        min_indexers_count = indexers_count;
 
     for (std::size_t i = 0; i < min_indexers_count; ++i)
         // A robust backend uses the indexers as appropriate for the benchmarking
