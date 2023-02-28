@@ -8,7 +8,7 @@ set(${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
     )
 set(${PROJECT_NAME}_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/dynamic_lib_load.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/hebench/dynamic_lib_load.h"
     )
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
