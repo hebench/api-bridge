@@ -86,7 +86,7 @@ ErrorCode destroyHandle(Handle h)
     return retval;
 }
 
-ErrorCode initEngine(Handle *h_engine)
+ErrorCode initEngine(Handle *h_engine, const int8_t *p_buffer, uint64_t size)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -96,7 +96,7 @@ ErrorCode initEngine(Handle *h_engine)
             throw HEBenchError(HEBERROR_MSG("Invalid null handle 'h_engine'."),
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
-        BaseEngine *p_engine = createEngine();
+        BaseEngine *p_engine = createEngine(p_buffer, size);
         h_engine->p          = p_engine;
         h_engine->size       = sizeof(BaseEngine);
         h_engine->tag        = p_engine->classTag();
@@ -153,7 +153,7 @@ ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count)
     return retval;
 }
 
-ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
+ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -167,7 +167,7 @@ ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs)
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
         BaseEngine *p_engine = reinterpret_cast<BaseEngine *>(h_engine.p);
-        p_engine->subscribeBenchmarks(p_h_bench_descs);
+        p_engine->subscribeBenchmarks(p_h_bench_descs, count);
     }
     catch (HEBenchError &hebench_err)
     {
@@ -231,7 +231,8 @@ ErrorCode getWorkloadParamsDetails(Handle h_engine,
 ErrorCode describeBenchmark(Handle h_engine,
                             Handle h_bench_desc,
                             BenchmarkDescriptor *p_bench_desc,
-                            WorkloadParams *p_default_params)
+                            WorkloadParams *p_default_params,
+                            std::uint64_t default_count)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
 
@@ -245,7 +246,7 @@ ErrorCode describeBenchmark(Handle h_engine,
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
         BaseEngine *p_engine = reinterpret_cast<BaseEngine *>(h_engine.p);
-        p_engine->describeBenchmark(h_bench_desc, p_bench_desc, p_default_params);
+        p_engine->describeBenchmark(h_bench_desc, p_bench_desc, p_default_params, default_count);
     }
     catch (HEBenchError &hebench_err)
     {
@@ -569,6 +570,7 @@ ErrorCode store(Handle h_benchmark,
 ErrorCode operate(Handle h_benchmark,
                   Handle h_remote_packed_params,
                   const ParameterIndexer *p_param_indexers,
+                  uint64_t indexers_count,
                   Handle *h_remote_output)
 {
     ErrorCode retval = HEBENCH_ECODE_SUCCESS;
@@ -589,7 +591,7 @@ ErrorCode operate(Handle h_benchmark,
                                HEBENCH_ECODE_CRITICAL_ERROR);
 
         BenchmarkHandle *p_bh = reinterpret_cast<BenchmarkHandle *>(h_benchmark.p);
-        *h_remote_output      = p_bh->p_benchmark->operate(h_remote_packed_params, p_param_indexers);
+        *h_remote_output      = p_bh->p_benchmark->operate(h_remote_packed_params, p_param_indexers, indexers_count);
     }
     catch (HEBenchError &hebench_err)
     {
@@ -710,8 +712,9 @@ std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
     return retval;
 }
 
-std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size)
+std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size)
 {
+    (void)h_engine; // not needed
     std::uint64_t retval = 0;
 
     try

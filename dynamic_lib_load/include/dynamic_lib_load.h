@@ -44,9 +44,9 @@ public:
     static void unloadLibrary();
 
     static ErrorCode destroyHandle(Handle h);
-    static ErrorCode initEngine(Handle *h_engine);
+    static ErrorCode initEngine(Handle *h_engine, const int8_t *p_buffer, uint64_t size);
     static ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_count);
-    static ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs);
+    static ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count);
     static ErrorCode getWorkloadParamsDetails(Handle h_engine,
                                               Handle h_bench_desc,
                                               std::uint64_t *p_param_count,
@@ -54,7 +54,8 @@ public:
     static ErrorCode describeBenchmark(Handle h_engine,
                                        Handle h_bench_desc,
                                        BenchmarkDescriptor *p_bench_desc,
-                                       WorkloadParams *p_default_params);
+                                       WorkloadParams *p_default_params,
+                                       std::uint64_t default_count);
     static ErrorCode createBenchmark(Handle h_engine,
                                      Handle h_bench_desc,
                                      const WorkloadParams *p_params,
@@ -84,6 +85,7 @@ public:
     static ErrorCode operate(Handle h_benchmark,
                              Handle h_remote_packed_params,
                              const ParameterIndexer *p_param_indexers,
+                             uint64_t indexers_count,
                              Handle *h_remote_output);
     static std::uint64_t getSchemeName(Handle h_engine, Scheme s, char *p_name, std::uint64_t size);
     static std::uint64_t getSchemeSecurityName(Handle h_engine, Scheme s, Security sec,
@@ -92,7 +94,7 @@ public:
                                                    Handle h_bench_desc,
                                                    const hebench::APIBridge::WorkloadParams *p_w_params,
                                                    char *p_description, std::uint64_t size);
-    static std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size);
+    static std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size);
     static std::uint64_t getLastErrorDescription(Handle h_engine, char *p_description, std::uint64_t size);
 
 private:
