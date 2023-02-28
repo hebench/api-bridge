@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <new>
+#include <sstream>
 
 #include "hebench/api_bridge/cpp/benchmark.hpp"
 #include "hebench/api_bridge/cpp/engine.hpp"
@@ -102,13 +103,23 @@ std::shared_ptr<BenchmarkDescription> BaseEngine::matchBenchmark(hebench::APIBri
     return p_retval;
 }
 
-void BaseEngine::subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs) const
+void BaseEngine::subscribeBenchmarks(hebench::APIBridge::Handle *p_h_bench_descs, std::uint64_t count) const
 {
     if (!p_h_bench_descs)
-        throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: p_h_bench_descs"),
+        throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: `p_h_bench_descs`."),
                            HEBENCH_ECODE_CRITICAL_ERROR);
+    if (count != static_cast<std::uint64_t>(m_descriptors.size()))
+    {
+        std::stringstream ss;
+        ss << "Invalid size parameter: `count`. Expected " << m_descriptors.size()
+           << ", but " << count << " received.";
+        throw HEBenchError(HEBERROR_MSG_CLASS(ss.str()),
+                           HEBENCH_ECODE_INVALID_ARGS);
+    } // end if
 
-    for (std::size_t i = 0; i < m_descriptors.size(); ++i)
+    std::uint64_t min_size = std::min(count, static_cast<std::uint64_t>(m_descriptors.size()));
+    assert(min_size == static_cast<std::uint64_t>(m_descriptors.size()));
+    for (std::size_t i = 0; i < min_size; ++i)
     {
         p_h_bench_descs[i].p    = (void *)(i);
         p_h_bench_descs[i].size = sizeof(BenchmarkDescription);
@@ -136,7 +147,8 @@ std::uint64_t BaseEngine::getDefaultWorkloadParamsCount(hebench::APIBridge::Hand
 
 void BaseEngine::describeBenchmark(hebench::APIBridge::Handle h_bench_desc,
                                    hebench::APIBridge::BenchmarkDescriptor *p_bench_desc,
-                                   hebench::APIBridge::WorkloadParams *p_default_params) const
+                                   hebench::APIBridge::WorkloadParams *p_default_params,
+                                   std::uint64_t default_count) const
 {
     if (!p_bench_desc)
         throw HEBenchError(HEBERROR_MSG_CLASS("Invalid null parameter: p_bench_desc"),
@@ -149,13 +161,12 @@ void BaseEngine::describeBenchmark(hebench::APIBridge::Handle h_bench_desc,
 
     p_bd->getBenchmarkDescriptor(*p_bench_desc);
 
-    // return the default parameters
-    const auto &default_params = p_bd->getWorkloadDefaultParameters();
-    if (p_default_params && !default_params.empty())
+    if (p_default_params)
     {
-        // per specification of caller function, p_default_params must have enough space
-        // available to hold, at least, default_params.size() elements
-        for (std::size_t i = 0; i < default_params.size(); ++i)
+        // return the default parameters
+        const auto &default_params      = p_bd->getWorkloadDefaultParameters();
+        std::uint64_t min_default_count = std::min<std::uint64_t>(default_count, default_params.size());
+        for (std::size_t i = 0; i < min_default_count; ++i)
         {
             // all WorkloadParams elements in p_default_params must be pre-allocated by caller.
             if (p_default_params[i].count < default_params[i].size())
@@ -203,10 +214,10 @@ void BaseEngine::destroyBenchmark(hebench::APIBridge::Handle h_bench)
     } // end if
 }
 
-hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t check_tags) const
+hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t new_tags, std::int64_t check_tags) const
 {
     if ((check_tags & ITaggedObject::MaskReservedBits) != 0)
-        throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid 'check_tags' detected. Most significant 8 bits of tags are reserved."),
+        throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid `check_tags` detected. Most significant 8 bits of tags are reserved."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
     if ((h.tag & hebench::cpp::EngineObject::tag) != hebench::cpp::EngineObject::tag)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid tag detected. Expected EngineObject::tag."),
@@ -214,7 +225,9 @@ hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handl
     if ((h.tag & check_tags) != check_tags)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid tag detected. Expected " + std::to_string(check_tags) + "."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
-
+    if ((new_tags & ITaggedObject::MaskReservedBits) != 0)
+        throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid `new_tags` detected. Most significant 8 bits of tags are reserved."),
+                                         HEBENCH_ECODE_CRITICAL_ERROR);
     if (!h.p)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid null handle."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
@@ -233,8 +246,13 @@ hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handl
     hebench::APIBridge::Handle retval;
     retval.p    = p_retval;
     retval.size = h.size;
-    retval.tag  = h.tag;
+    retval.tag  = p_retval->classTag() | new_tags;
     return retval;
+}
+
+hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t check_tags) const
+{
+    return duplicateHandle(h, h.tag, check_tags);
 }
 
 } // namespace cpp

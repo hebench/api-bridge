@@ -28,11 +28,18 @@ extern "C" ErrorCode destroyHandle(Handle h);
  * @brief Initializes the backend engine.
  * @param[out] h_engine Points to a handle to fill with the initialized
  * backend engine handle descriptor. Must not be null.
+ * @param[in] p_buffer Input buffer of bytes with extra information for engine
+ * initialization. May be `null`.
+ * @param[in] size Number of bytes pointed by \p p_buffer .
  * @return Error code.
  * @details Use this method to initialize backend engine, such as drivers,
  * hardware, etc. required to perform operations.
+ *
+ * Data stored in \p p_buffer is specified by frontend user through benchmark
+ * configuration files. Test Harness will forward this information to backend
+ * using this buffer.
  */
-extern "C" ErrorCode initEngine(Handle *h_engine);
+extern "C" ErrorCode initEngine(Handle *h_engine, const int8_t *p_buffer, uint64_t size);
 
 /**
  * @brief Retrieves the number of benchmarks for which the backend is registering
@@ -48,8 +55,10 @@ extern "C" ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_
  * @brief Retrieves handles to the benchmark descriptions for which the backend is
  * registering to perform.
  * @param[in] h_engine Backend engine handle.
- * @param[out] p_h_bench_descs Pointer to array with capacity for as many handles
- * as specified by subscribeBenchmarksCount(). Cannot be null.
+ * @param[out] p_h_bench_descs Pointer to array where to store the handles to the benchmark
+ * descriptions. Array has capacity for \p count handles. Cannot be null.
+ * @param[in] count Number of handles available in array pointed by \p p_h_bench_descs .
+ * This is will be as many handles as returned by `subscribeBenchmarksCount()`.
  * @return Error code.
  * @details The handles in \p p_h_bench_descs are pointed to the internal representation
  * of the description of each benchmark that the backend is registering to perform.
@@ -60,7 +69,7 @@ extern "C" ErrorCode subscribeBenchmarksCount(Handle h_engine, std::uint64_t *p_
  *
  * @sa subscribeBenchmarksCount()
  */
-extern "C" ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs);
+extern "C" ErrorCode subscribeBenchmarks(Handle h_engine, Handle *p_h_bench_descs, std::uint64_t count);
 /**
  * @brief Retrieves details about the flexible parameters supported by this workload.
  * @param[in] h_engine Handle to the backend engine to perform the benchmark.
@@ -87,10 +96,14 @@ extern "C" ErrorCode getWorkloadParamsDetails(Handle h_engine,
  * @param[out] p_default_params Array of `WorkloadParams` that will receive the sets of
  * default parameters supported by this workload. It can be null if caller does not need
  * this information.
+ * @param[in] default_count Number of elements available in the array pointed by
+ * \p p_default_params . This is will be as many default flexible parameter sets as
+ * returned by `getWorkloadParamsDetails()`, or ignored if \p p_default_params is null.
  * @return Error code.
  * @details The array \p p_default_params is null if caller does not need the information
  * regarding default arguments for workload, otherwise, it must have enough capacity to
- * hold, at least, as many default sets as returned by getWorkloadParamsDetails().
+ * hold, at least, as many default sets as specified by \p default_count . The number of
+ * default sets in \p default_count should be the same as returned by `getWorkloadParamsDetails()`.
  * If workload does not support parameters, \p p_default_params is ignored.
  *
  * @sa getWorkloadParamsDetails()
@@ -98,7 +111,8 @@ extern "C" ErrorCode getWorkloadParamsDetails(Handle h_engine,
 extern "C" ErrorCode describeBenchmark(Handle h_engine,
                                        Handle h_bench_desc,
                                        BenchmarkDescriptor *p_bench_desc,
-                                       WorkloadParams *p_default_params);
+                                       WorkloadParams *p_default_params,
+                                       std::uint64_t default_count);
 /**
  * @brief Instantiates a benchmark on the backend.
  * @param[in] h_engine Handle to the backend engine to perform the benchmark.
@@ -332,6 +346,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * use for the operation. The data represented by this handle must not be changed
  * since it may be reused in several calls to `operate()`.
  * @param[in] p_param_indexers Indexers for the parameters of the operation.
+ * @param[in] indexers_count Number of indexrs in \p p_param_indexers .
  * @param[out] h_remote_output Handle representing the result of the operation
  * stored in the backend remote.
  * @return Error code.
@@ -346,7 +361,8 @@ extern "C" ErrorCode store(Handle h_benchmark,
  * the backend remote using a single call of the load() function. Parameter \p p_param_indexers
  * contains the indexers for the parameter packs, and thus the number of elements in
  * array \p p_param_indexers is, at least, the same as the number of parameters required for
- * the operation. The actual configuration for the call to `operate()` issued by Test Harness
+ * the operation. \p indexers_count specifies the actual number of elements in \p p_param_indexers .
+ * The actual configuration for the call to `operate()` issued by Test Harness
  * is defined for each workload.
  *
  * Once decoded, the workload results generated by this function must be indexed starting
@@ -497,6 +513,7 @@ extern "C" ErrorCode store(Handle h_benchmark,
 extern "C" ErrorCode operate(Handle h_benchmark,
                              Handle h_remote_packed_params,
                              const ParameterIndexer *p_param_indexers,
+                             uint64_t indexers_count,
                              Handle *h_remote_output);
 
 /**
@@ -572,6 +589,8 @@ extern "C" std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
 
 /**
  * @brief Retrieves the general error description of an error code.
+ * @param[in] h_engine Handle to the backend engine. Can be a null handle
+ * (especially if there is no engine when the error occurred).
  * @param[in] code Error code to describe.
  * @param[out] p_description Buffer to store C-string description of the error.
  * @param[in] size Size in bytes of \p p_description buffer.
@@ -585,7 +604,7 @@ extern "C" std::uint64_t getBenchmarkDescriptionEx(Handle h_engine,
  * in \p size from the error description into the buffer pointed to by
  * \p p_description, including the C-string null terminator.
  */
-extern "C" std::uint64_t getErrorDescription(ErrorCode code, char *p_description, std::uint64_t size);
+extern "C" std::uint64_t getErrorDescription(Handle h_engine, ErrorCode code, char *p_description, std::uint64_t size);
 
 /**
  * @brief Retrieves the detailed description of the last error that occurred

@@ -190,7 +190,8 @@ public:
     virtual void store(hebench::APIBridge::Handle remote_data, hebench::APIBridge::Handle *p_local_data, std::uint64_t count) = 0;
 
     virtual hebench::APIBridge::Handle operate(hebench::APIBridge::Handle h_remote_packed,
-                                               const hebench::APIBridge::ParameterIndexer *p_param_indexers) = 0;
+                                               const hebench::APIBridge::ParameterIndexer *p_param_indexers,
+                                               std::uint64_t indexers_count) = 0;
 
     BaseEngine &getEngine() { return m_engine; }
     const BaseEngine &getEngine() const { return m_engine; }
