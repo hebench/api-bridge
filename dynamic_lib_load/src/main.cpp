@@ -1,7 +1,7 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dynamic_lib_load.h"
+#include "hebench/dynamic_lib_load.h"
 
 namespace hebench {
 namespace APIBridge {
