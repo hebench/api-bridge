@@ -7,7 +7,7 @@
 #error("Source file only supported in LINUX!")
 #endif
 
-#include "dynamic_lib_load.h"
+#include "hebench/dynamic_lib_load.h"
 
 namespace hebench {
 namespace APIBridge {
