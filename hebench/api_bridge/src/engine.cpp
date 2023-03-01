@@ -214,7 +214,7 @@ void BaseEngine::destroyBenchmark(hebench::APIBridge::Handle h_bench)
     } // end if
 }
 
-hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t new_tags, std::int64_t check_tags) const
+void BaseEngine::checkHandleTags(hebench::APIBridge::Handle h, std::int64_t check_tags) const
 {
     if ((check_tags & ITaggedObject::MaskReservedBits) != 0)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid `check_tags` detected. Most significant 8 bits of tags are reserved."),
@@ -225,9 +225,26 @@ hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handl
     if ((h.tag & check_tags) != check_tags)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid tag detected. Expected " + std::to_string(check_tags) + "."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
-    if ((new_tags & ITaggedObject::MaskReservedBits) != 0)
+}
+
+hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t new_tags, std::int64_t check_tags) const
+{
+    checkHandleTags(h, check_tags);
+    if (new_tags != h.tag && (new_tags & ITaggedObject::MaskReservedBits) != 0)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid `new_tags` detected. Most significant 8 bits of tags are reserved."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
+
+    return duplicateHandleInternal(h, new_tags);
+}
+
+hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t check_tags) const
+{
+    checkHandleTags(h, check_tags);
+    return duplicateHandleInternal(h, h.tag);
+}
+
+hebench::APIBridge::Handle BaseEngine::duplicateHandleInternal(hebench::APIBridge::Handle h, std::int64_t new_tag) const
+{
     if (!h.p)
         throw hebench::cpp::HEBenchError(HEBERROR_MSG_CLASS("Invalid null handle."),
                                          HEBENCH_ECODE_CRITICAL_ERROR);
@@ -246,13 +263,8 @@ hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handl
     hebench::APIBridge::Handle retval;
     retval.p    = p_retval;
     retval.size = h.size;
-    retval.tag  = p_retval->classTag() | new_tags;
+    retval.tag  = p_retval->classTag() | new_tag;
     return retval;
-}
-
-hebench::APIBridge::Handle BaseEngine::duplicateHandle(hebench::APIBridge::Handle h, std::int64_t check_tags) const
-{
-    return duplicateHandle(h, h.tag, check_tags);
 }
 
 } // namespace cpp

@@ -362,6 +362,9 @@ protected:
     static void addErrorCode(hebench::APIBridge::ErrorCode code, const std::string &description);
 
 private:
+    void checkHandleTags(hebench::APIBridge::Handle h, std::int64_t check_tags) const;
+    hebench::APIBridge::Handle duplicateHandleInternal(hebench::APIBridge::Handle h, std::int64_t new_tag) const;
+
     static const std::string UnknownErrorMsg;
     static hebench::APIBridge::ErrorCode m_last_error;
     static std::string m_s_last_error_description;
