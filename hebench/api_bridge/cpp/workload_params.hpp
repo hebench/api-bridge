@@ -532,23 +532,25 @@ public:
         Index_N,
         Index_M,
         Index_K,
+        Index_A,
+        Index_B,
         MinRequiredParameters
     };
 
     /**
-     * @brief Number of elements in set A.
+     * @brief Number of elements in set X.
      */
     std::uint64_t n() const { return get<std::uint64_t>(Index_N); }
     /**
-     * @brief Number of elements in set A.
+     * @brief Number of elements in set X.
      */
     std::uint64_t &n() { return m_w_params.at(Index_N).u_param; }
     /**
-     * @brief Number of elements in set B.
+     * @brief Number of elements in set Y.
      */
     std::uint64_t m() const { return get<std::uint64_t>(Index_M); }
     /**
-     * @brief Number of elements in set B.
+     * @brief Number of elements in set Y.
      */
     std::uint64_t &m() { return m_w_params.at(Index_M).u_param; }
     /**
@@ -559,21 +561,41 @@ public:
      * @brief Number of items per element.
      */
     std::uint64_t &k() { return m_w_params.at(Index_K).u_param; }
+    /**
+     * @brief The elements' value is at least a.
+     */
+    std::int64_t a() const { return get<std::int64_t>(Index_A); }
+    /**
+     * @brief The elements' value is at least a.
+     */
+    std::int64_t &a() { return reinterpret_cast<std::int64_t &>(m_w_params.at(Index_A).u_param); }
+    /**
+     * @brief The elements' value is at most b.
+     */
+    std::int64_t b() const { return get<std::int64_t>(Index_A); }
+    /**
+     * @brief The elements' value is at most b.
+     */
+    std::int64_t &b() { return reinterpret_cast<std::int64_t &>(m_w_params.at(Index_B).u_param); }
 
 public:
     /**
      * @brief Initializes a new object to represent workload parameters for simple
      * set intersection.
-     * @param[in] _n Number of elements in set A.
-     * @param[in] _m Number of elements in set B.
+     * @param[in] _n Number of elements in set X.
+     * @param[in] _m Number of elements in set Y.
      * @param[in] _k Number of items per element.
+     * @param[in] _a The elements' value is at least a.
+     * @param[in] _b The elements' value is at most b.
      */
-    SimpleSetIntersection(std::uint64_t _n = 0, std::uint64_t _m = 0, std::uint64_t _k = 1) :
+    SimpleSetIntersection(std::uint64_t _n = 0, std::uint64_t _m = 0, std::uint64_t _k = 1, std::int64_t _a = -16384, std::int64_t _b = 16384) :
         Common(MinRequiredParameters)
     {
         this->set<std::uint64_t>(Index_N, _n, "n");
         this->set<std::uint64_t>(Index_M, _m, "m");
         this->set<std::uint64_t>(Index_K, _k, "k");
+        this->set<std::int64_t>(Index_A, _a, "a");
+        this->set<std::int64_t>(Index_B, _b, "b");
     }
 
     /**
@@ -617,8 +639,8 @@ private:
         if (m_w_params.size() < MinRequiredParameters)
             throw std::out_of_range("Workload requires, at least, " + std::to_string(MinRequiredParameters) + " parameters.");
         for (std::size_t i = 0; i < MinRequiredParameters; ++i)
-            if (m_w_params[i].data_type != hebench::APIBridge::WorkloadParamType::UInt64)
-                throw std::logic_error("Data type for workload parameter " + std::to_string(i) + " must be WorkloadParamType::UInt64.");
+            if (m_w_params[i].data_type != hebench::APIBridge::WorkloadParamType::UInt64 && m_w_params[i].data_type != hebench::APIBridge::WorkloadParamType::Int64)
+                throw std::logic_error("Data type for workload parameter " + std::to_string(i) + " must be WorkloadParamType::(U)Int64.");
     }
 };
 

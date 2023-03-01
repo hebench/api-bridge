@@ -251,6 +251,8 @@ enum Workload
      * - 0: `uint64` - Size of dataset `X` (number of items in set): `n`.
      * - 1: `uint64` - Size of dataset `Y` (number of items in set): `m`.
      * - 2: `uint64` - Number of elements in an item of a dataset. Must be greater than `0`: `k`.
+     * - 3: `int64`  - The elements within an item are at least `a`.
+     * - 4: `int64`  - The elements within an item are at most `b`.
      *
      * Operation Params: `X`, `Y`
      *
@@ -261,7 +263,7 @@ enum Workload
      *
      * - 0: `Z` - set containing, at most, `min(n, m)` items.
      * @code
-     * `Z` = {`z_0`, ..., `z_n`, where `z_i` in `X` and `z_i` in `Y`}
+     * `Z` = {`z_0`, ..., `z_n`, where a <= `z_i` <= b, `z_i` in `X` and `z_i` in `Y`}
      * @endcode
      *
      * For details see \ref simple_set_intersection .*/
